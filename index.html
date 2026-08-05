@@ -1,68 +1,141 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-<title>Camper Planner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="css/style.css">
+    <title>La sosta al punto giusto</title>
 
-<link
-rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <link rel="stylesheet" href="css/style.css">
+
+
+    <link rel="stylesheet" 
+    href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
 
 </head>
 
+
 <body>
 
-<header>
-
-<h1>🚐 Camper Planner</h1>
-<div id="version">Versione 0.1 - Routing funzionante</div>
-
-</header>
 
 <div class="container">
 
-<div class="card">
 
-<label>Partenza</label>
-<input id="start" type="text">
+    <header>
 
-<label>Tappa (facoltativa)</label>
-<input id="waypoint" type="text">
+        <h1>🚐 La sosta al punto giusto</h1>
 
-<label>Arrivo</label>
-<input id="end" type="text">
+        <p>
+            Un regalo di Marco per pianificare i viaggi in camper
+        </p>
 
-<label>Velocità camper rispetto allo standard (%)</label>
+        <small>
+            Versione 0.3
+        </small>
 
-<input 
-id="camperSpeedFactor"
-type="number"
-min="30"
-max="120"
-placeholder="es. 85">
+    </header>
 
-<button id="routeButton">
 
-Calcola percorso
 
-</button>
+    <section class="input-area">
 
-<div id="results">
+
+        <label for="start">
+            Partenza
+        </label>
+
+        <input 
+        id="start"
+        type="text"
+        placeholder="Inserisci località di partenza">
+
+
+
+        <label for="stop">
+            Tappa (facoltativa)
+        </label>
+
+        <input 
+        id="stop"
+        type="text"
+        placeholder="Inserisci eventuale tappa">
+
+
+
+        <label for="end">
+            Destinazione
+        </label>
+
+        <input 
+        id="end"
+        type="text"
+        placeholder="Inserisci destinazione finale">
+
+
+
+        <label for="camperSpeedFactor">
+            Velocità camper rispetto allo standard (%)
+        </label>
+
+        <input
+        id="camperSpeedFactor"
+        type="number"
+        min="50"
+        max="110"
+        value="85">
+
+
+
+        <label for="departureTime">
+            Ora di partenza
+        </label>
+
+        <input
+        id="departureTime"
+        type="time"
+        value="08:30">
+
+
+
+        <label for="stopTime">
+            Ora desiderata della sosta
+        </label>
+
+        <input
+        id="stopTime"
+        type="time"
+        value="18:00">
+
+
+        <button id="routeButton">
+            CALCOLA PERCORSO
+        </button>
+
+
+    </section>
+
+
+
+    <section id="results">
+
+
+    </section>
+
+
+
+    <div id="map"></div>
+
 
 </div>
 
-</div>
-
-<div id="map"></div>
-
-</div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 
 <script src="js/map.js"></script>
 
@@ -70,5 +143,8 @@ Calcola percorso
 
 <script src="js/app.js"></script>
 
+
 </body>
+
 </html>
+<!-- fine index.html -->
