@@ -1,6 +1,12 @@
+let currentStopLocation = "";
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
 
+
     initMap();
+
 
 
     document
@@ -8,33 +14,62 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("click", async function () {
 
 
-        const startText =
-        document.getElementById("start").value;
+        const button =
+        document.getElementById("routeButton");
 
 
-        const endText =
-        document.getElementById("end").value;
+        button.disabled = true;
 
+        button.innerText = "CALCOLO...";
 
-        const speedValue =
-        document.getElementById("camperSpeedFactor")
-        ? document.getElementById("camperSpeedFactor").value
-        : "";
-
-
-        if (!startText || !endText) {
-
-            alert("Inserisci partenza e arrivo");
-            return;
-
-        }
 
 
         try {
 
 
+            const startText =
+            document.getElementById("start").value;
+
+
+            const endText =
+            document.getElementById("end").value;
+
+
+            const stopText =
+            document.getElementById("stop").value;
+
+
+
+            const speedValue =
+            document.getElementById("camperSpeedFactor").value;
+
+
+            const departureTime =
+            document.getElementById("departureTime").value;
+
+
+            const stopTime =
+            document.getElementById("stopTime").value;
+
+
+
+            if (!startText || !endText) {
+
+                alert("Inserisci partenza e destinazione");
+
+                return;
+
+            }
+
+
+
+            saveData();
+
+
+
             const start =
             await geocode(startText);
+
 
 
             const end =
@@ -42,18 +77,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-            const route =
-            await getRoute(start, end);
+            let route;
 
 
 
-            const coords =
-            route.geometry.coordinates.map(
-                p => [p[1], p[0]]
+            if (stopText.trim() !== "") {
+
+
+                const stop =
+                await geocode(stopText);
+
+
+                route =
+                await getRouteWithWaypoint(
+                    start,
+                    stop,
+                    end
+                );
+
+
+            } else {
+
+
+                route =
+                await getRoute(
+                    start,
+                    end
+                );
+
+            }
+
+
+
+
+            drawRoute(
+                route.geometry.coordinates
             );
 
-
-            drawRoute(coords);
 
 
             addMarker(
@@ -63,15 +123,17 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
 
+
             addMarker(
                 end.lat,
                 end.lon,
-                "Arrivo"
+                "Destinazione"
             );
 
 
 
-            const camperSpeedFactor =
+
+            const camperFactor =
             speedValue === ""
             ? 1
             : Number(speedValue) / 100;
@@ -79,41 +141,195 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             const camperDuration =
-            route.duration / camperSpeedFactor;
+            route.duration / camperFactor;
+
+
+
+
+            const stopPoint =
+            calculateStopPoint(
+                route.geometry.coordinates,
+                camperDuration,
+                departureTime,
+                stopTime
+            );
+
+
+
+
+            let stopTextResult =
+            "Non calcolabile";
+
+
+
+            let stopCoordinates =
+            "";
+
+
+
+            if (stopPoint) {
+
+
+                addStopMarker(
+                    stopPoint.lat,
+                    stopPoint.lon
+                );
+
+
+                const location =
+                await reverseGeocode(
+                    stopPoint.lat,
+                    stopPoint.lon
+                );
+
+
+                currentStopLocation =
+                location.name;
+
+
+                stopTextResult =
+                location.name;
+
+
+                stopCoordinates =
+                stopPoint.lat.toFixed(5)
+                + ", "
+                + stopPoint.lon.toFixed(5);
+
+
+
+            }
+
+
+
+
+            const standardHours =
+            Math.floor(
+                route.duration / 3600
+            );
+
+
+            const standardMinutes =
+            Math.round(
+                (route.duration % 3600) / 60
+            );
+
+
+
+            const camperHours =
+            Math.floor(
+                camperDuration / 3600
+            );
+
+
+            const camperMinutes =
+            Math.round(
+                (camperDuration % 3600) / 60
+            );
 
 
 
             document
             .getElementById("results")
-            .innerHTML =
-            `
-            <b>Percorso calcolato</b>
-            <br><br>
+            .innerHTML = `
 
-            Distanza:
-            ${(route.distance/1000).toFixed(1)} km
 
-            <br><br>
+            <div>
 
-            Tempo standard:
-            ${Math.floor(route.duration/3600)} ore 
-            ${Math.round((route.duration%3600)/60)} minuti
+            Distanza
 
-            <br><br>
+            <br>
 
-            Tempo camper:
-            ${Math.floor(camperDuration/3600)} ore 
-            ${Math.round((camperDuration%3600)/60)} minuti
+            <b>
+            ${(route.distance/1000).toFixed(1)}
+            km
+            </b>
+
 
             <br><br>
+
+
+            <b>
+            Tempo in camper
+            </b>
+
+            <br>
+
+            <b>
+            ${camperHours} ore
+            ${camperMinutes} minuti
+            </b>
+
+
+            <br><br>
+
+
+            A velocità standard si impiegherebbero:
+
+            <br>
+
+            ${standardHours} ore
+            ${standardMinutes} minuti
+
+
+            <br><br><br>
+
+
+            <b>
+            Alle ore ${stopTime} sarai a
+            </b>
+
+
+            <br>
+
+
+            <span class="stop-location">
+
+            ${stopTextResult}
+
+            </span>
+
+
+            <br><br>
+
+
+            Coordinate:
+
+            <br>
+
+            ${stopCoordinates}
+
+
+            <br><br>
+
 
             Velocità camper:
-            ${speedValue === "" ? 100 : speedValue}%
+
+            ${speedValue || 100}%
+
+
+            <br><br>
+
+
+            <button 
+            class="copy-button"
+            onclick="copyStopLocation()">
+
+            📋 Copia località
+
+            </button>
+
+
+            </div>
+
+
             `;
 
 
 
-        } catch(error) {
+        }
+
+        catch(error) {
 
 
             alert(
@@ -124,8 +340,107 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
+        finally {
+
+
+            button.disabled = false;
+
+            button.innerText =
+            "CALCOLA PERCORSO";
+
+
+        }
+
 
     });
 
 
+
 });
+
+
+
+
+
+function saveData() {
+
+
+    const fields = [
+        "start",
+        "stop",
+        "end",
+        "camperSpeedFactor",
+        "departureTime",
+        "stopTime"
+    ];
+
+
+
+    fields.forEach(function(id){
+
+
+        localStorage.setItem(
+            id,
+            document.getElementById(id).value
+        );
+
+
+    });
+
+
+}
+
+
+
+
+
+
+function copyStopLocation(){
+
+
+    navigator.clipboard.writeText(
+        currentStopLocation
+    );
+
+
+}
+
+
+
+
+
+
+window.onload = function(){
+
+
+    const fields = [
+        "start",
+        "stop",
+        "end",
+        "camperSpeedFactor",
+        "departureTime",
+        "stopTime"
+    ];
+
+
+
+    fields.forEach(function(id){
+
+
+        const value =
+        localStorage.getItem(id);
+
+
+
+        if(value !== null){
+
+            document.getElementById(id).value =
+            value;
+
+        }
+
+
+    });
+
+
+};
