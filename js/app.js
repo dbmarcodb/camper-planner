@@ -15,14 +15,18 @@ document.addEventListener("DOMContentLoaded", function(){
         const endText =
         document.getElementById("end").value;
 
-        const reductionInput =
-document.getElementById("speedReduction").value;
+       const speedValue =
+document.getElementById("camperSpeedFactor").value;
 
 
-const speedReduction =
-reductionInput === ""
-? 0
-: Number(reductionInput);
+const camperSpeedFactor =
+speedValue === ""
+? 1
+: Number(speedValue) / 100;
+
+
+const adjustedDuration =
+route.duration / camperSpeedFactor;
 
 
         if (!startText || !endText) {
