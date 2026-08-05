@@ -1,11 +1,11 @@
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function () {
 
     initMap();
 
 
     document
     .getElementById("routeButton")
-    .addEventListener("click", async function(){
+    .addEventListener("click", async function () {
 
 
         const startText =
@@ -15,18 +15,11 @@ document.addEventListener("DOMContentLoaded", function(){
         const endText =
         document.getElementById("end").value;
 
-       const speedValue =
-document.getElementById("camperSpeedFactor").value;
 
-
-const camperSpeedFactor =
-speedValue === ""
-? 1
-: Number(speedValue) / 100;
-
-
-const adjustedDuration =
-route.duration / camperSpeedFactor;
+        const speedValue =
+        document.getElementById("camperSpeedFactor")
+        ? document.getElementById("camperSpeedFactor").value
+        : "";
 
 
         if (!startText || !endText) {
@@ -39,6 +32,7 @@ route.duration / camperSpeedFactor;
 
         try {
 
+
             const start =
             await geocode(startText);
 
@@ -49,22 +43,13 @@ route.duration / camperSpeedFactor;
 
 
             const route =
-            await getRoute(start,end);
-
-            const speedValue =
-document.getElementById("camperSpeedFactor").value;
-
-
-const camperSpeedFactor =
-speedValue === ""
-? 1
-: Number(speedValue) / 100;
+            await getRoute(start, end);
 
 
 
             const coords =
             route.geometry.coordinates.map(
-                p => [p[1],p[0]]
+                p => [p[1], p[0]]
             );
 
 
@@ -74,50 +59,68 @@ speedValue === ""
             addMarker(
                 start.lat,
                 start.lon,
-                "Partenza: " + startText
+                "Partenza"
             );
 
 
             addMarker(
                 end.lat,
                 end.lon,
-                "Arrivo: " + endText
+                "Arrivo"
             );
 
-const adjustedDuration =
-route.duration / (1 - speedReduction / 100);
 
 
-document.getElementById("results").innerHTML =
-`
-<b>Percorso calcolato</b><br><br>
+            const camperSpeedFactor =
+            speedValue === ""
+            ? 1
+            : Number(speedValue) / 100;
 
-Distanza:
-${(route.distance/1000).toFixed(1)} km
 
-<br><br>
 
-Tempo standard:
-${Math.floor(route.duration/3600)} ore 
-${Math.round((route.duration%3600)/60)} minuti
+            const camperDuration =
+            route.duration / camperSpeedFactor;
 
-<br><br>
 
-Tempo camper:
-${Math.floor(adjustedDuration/3600)} ore 
-${Math.round((adjustedDuration%3600)/60)} minuti
 
-<br><br>
+            document
+            .getElementById("results")
+            .innerHTML =
+            `
+            <b>Percorso calcolato</b>
+            <br><br>
 
-Velocità camper:
-${speedValue === "" ? "100" : speedValue}%
-`;
-         
+            Distanza:
+            ${(route.distance/1000).toFixed(1)} km
+
+            <br><br>
+
+            Tempo standard:
+            ${Math.floor(route.duration/3600)} ore 
+            ${Math.round((route.duration%3600)/60)} minuti
+
+            <br><br>
+
+            Tempo camper:
+            ${Math.floor(camperDuration/3600)} ore 
+            ${Math.round((camperDuration%3600)/60)} minuti
+
+            <br><br>
+
+            Velocità camper:
+            ${speedValue === "" ? 100 : speedValue}%
+            `;
+
 
 
         } catch(error) {
 
-            alert(error.message);
+
+            alert(
+                "Errore: "
+                + error.message
+            );
+
 
         }
 
