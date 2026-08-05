@@ -588,3 +588,157 @@ setupAutocomplete(
 
 
 });
+
+
+function setupAutocomplete(inputId, suggestionsId) {
+
+
+    const input =
+    document.getElementById(inputId);
+
+
+    const suggestions =
+    document.getElementById(suggestionsId);
+
+
+
+    let timer;
+
+
+
+    input.addEventListener(
+        "input",
+        function(){
+
+
+            clearTimeout(timer);
+
+
+
+            timer = setTimeout(
+                async function(){
+
+
+                    const text =
+                    input.value.trim();
+
+
+
+                    if(text.length < 3){
+
+
+                        suggestions.innerHTML = "";
+
+                        return;
+
+
+                    }
+
+
+
+
+                    const url =
+
+                    "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
+
+                    +
+
+                    encodeURIComponent(text);
+
+
+
+
+                    const response =
+                    await fetch(url);
+
+
+
+                    const results =
+                    await response.json();
+
+
+
+
+                    suggestions.innerHTML = "";
+
+
+
+
+                    results.forEach(
+                        function(place){
+
+
+
+                            const item =
+                            document.createElement("div");
+
+
+
+                            item.innerText =
+                            place.display_name;
+
+
+
+
+                            item.onclick =
+                            function(){
+
+
+                                input.value =
+                                place.display_name;
+
+
+                                suggestions.innerHTML =
+                                "";
+
+
+                            };
+
+
+
+                            suggestions.appendChild(item);
+
+
+
+                        }
+                    );
+
+
+
+                },
+
+                500
+
+            );
+
+
+        }
+
+    );
+
+
+}
+
+
+
+
+
+
+document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+
+    setupAutocomplete(
+        "start",
+        "startSuggestions"
+    );
+
+
+    setupAutocomplete(
+        "end",
+        "endSuggestions"
+    );
+
+
+});
