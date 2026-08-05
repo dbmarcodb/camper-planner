@@ -15,6 +15,15 @@ document.addEventListener("DOMContentLoaded", function(){
         const endText =
         document.getElementById("end").value;
 
+        const reductionInput =
+document.getElementById("speedReduction").value;
+
+
+const speedReduction =
+reductionInput === ""
+? 0
+: Number(reductionInput);
+
 
         if (!startText || !endText) {
 
@@ -62,19 +71,34 @@ document.addEventListener("DOMContentLoaded", function(){
                 "Arrivo: " + endText
             );
 
+const adjustedDuration =
+route.duration / (1 - speedReduction / 100);
 
-           document.getElementById("results").innerHTML =
+
+document.getElementById("results").innerHTML =
 `
 <b>Percorso calcolato</b><br><br>
 
 Distanza:
 ${(route.distance/1000).toFixed(1)} km
-<br>
+<br><br>
 
-Tempo stimato:
+Tempo auto:
 ${Math.floor(route.duration/3600)} ore 
 ${Math.round((route.duration%3600)/60)} minuti
+
+<br><br>
+
+Tempo camper:
+${Math.floor(adjustedDuration/3600)} ore 
+${Math.round((adjustedDuration%3600)/60)} minuti
+
+<br><br>
+
+Riduzione velocità:
+${speedReduction}%
 `;
+         
 
 
         } catch(error) {
