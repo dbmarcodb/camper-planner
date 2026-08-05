@@ -109,24 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
-    
-
-            addMarker(
-                start.lat,
-                start.lon,
-                "Partenza"
-            );
-
-
-
-            addMarker(
-                end.lat,
-                end.lon,
-                "Destinazione"
-            );
-
-
+            
 
 
             const camperFactor =
@@ -160,6 +143,7 @@ if (stopPoint) {
 
 }
 
+            
 
             let stopTextResult =
             "Non calcolabile";
@@ -179,6 +163,20 @@ if (stopPoint) {
                     stopPoint.lon
                 );
 
+
+                addMarker(
+                start.lat,
+                start.lon,
+                "Partenza"
+            );
+
+
+
+            addMarker(
+                end.lat,
+                end.lon,
+                "Destinazione"
+            );
 
                 const location =
                 await reverseGeocode(
