@@ -90,9 +90,10 @@ document.getElementById("results").innerHTML =
 
 Distanza:
 ${(route.distance/1000).toFixed(1)} km
+
 <br><br>
 
-Tempo auto:
+Tempo standard:
 ${Math.floor(route.duration/3600)} ore 
 ${Math.round((route.duration%3600)/60)} minuti
 
@@ -104,8 +105,8 @@ ${Math.round((adjustedDuration%3600)/60)} minuti
 
 <br><br>
 
-Riduzione velocità:
-${speedReduction}%
+Velocità camper:
+${speedValue === "" ? "100" : speedValue}%
 `;
          
 
