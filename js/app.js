@@ -446,3 +446,145 @@ window.onload = function(){
 
 
 };
+
+function setupAutocomplete(inputId, listId){
+
+
+const input =
+document.getElementById(inputId);
+
+
+const list =
+document.getElementById(listId);
+
+
+
+let timer;
+
+
+
+input.addEventListener(
+"input",
+function(){
+
+
+clearTimeout(timer);
+
+
+
+timer=setTimeout(
+async function(){
+
+
+const value =
+input.value;
+
+
+
+if(value.length < 3){
+
+list.innerHTML="";
+return;
+
+}
+
+
+
+const url =
+
+"https://nominatim.openstreetmap.org/search?format=json&q="
+
++
+
+encodeURIComponent(value)
+
++
+
+"&limit=5";
+
+
+
+const response =
+await fetch(url);
+
+
+
+const results =
+await response.json();
+
+
+
+list.innerHTML="";
+
+
+
+results.forEach(
+function(item){
+
+
+const div =
+document.createElement("div");
+
+
+div.innerText =
+item.display_name;
+
+
+
+div.onclick =
+function(){
+
+
+input.value =
+item.display_name;
+
+
+list.innerHTML="";
+
+
+};
+
+
+
+list.appendChild(div);
+
+
+
+});
+
+
+},
+500);
+
+
+});
+
+
+}
+
+
+
+document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+
+setupAutocomplete(
+"start",
+"startSuggestions"
+);
+
+
+setupAutocomplete(
+"stop",
+"stopSuggestions"
+);
+
+
+setupAutocomplete(
+"end",
+"endSuggestions"
+);
+
+
+});
