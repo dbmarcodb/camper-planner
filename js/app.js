@@ -47,6 +47,15 @@ reductionInput === ""
             const route =
             await getRoute(start,end);
 
+            const speedValue =
+document.getElementById("camperSpeedFactor").value;
+
+
+const camperSpeedFactor =
+speedValue === ""
+? 1
+: Number(speedValue) / 100;
+
 
 
             const coords =
