@@ -1,21 +1,14 @@
 async function geocode(place) {
 
-
     const url =
-    "https://nominatim.openstreetmap.org/search?format=json&q="
-    + encodeURIComponent(place)
-    + "&limit=1";
+        "https://nominatim.openstreetmap.org/search?format=json&q=" +
+        encodeURIComponent(place) +
+        "&limit=1";
 
 
+    const response = await fetch(url);
 
-    const response =
-    await fetch(url);
-
-
-
-    const data =
-    await response.json();
-
+    const data = await response.json();
 
 
     if (!data.length) {
@@ -27,7 +20,6 @@ async function geocode(place) {
     }
 
 
-
     return {
 
         lat: Number(data[0].lat),
@@ -36,8 +28,8 @@ async function geocode(place) {
 
     };
 
-
 }
+
 
 
 
@@ -47,30 +39,20 @@ async function getRoute(start, end) {
 
 
     const url =
+        "https://router.project-osrm.org/route/v1/driving/" +
 
-    "https://router.project-osrm.org/route/v1/driving/"
+        start.lon + "," + start.lat +
 
-    + start.lon
-    + ","
-    + start.lat
+        ";" +
 
-    + ";"
+        end.lon + "," + end.lat +
 
-    + end.lon
-    + ","
-    + end.lat
-
-    + "?overview=full&geometries=geojson";
+        "?overview=full&geometries=geojson";
 
 
+    const response = await fetch(url);
 
-    const response =
-    await fetch(url);
-
-
-
-    const data =
-    await response.json();
+    const data = await response.json();
 
 
 
@@ -83,11 +65,10 @@ async function getRoute(start, end) {
     }
 
 
-
     return data.routes[0];
 
-
 }
+
 
 
 
@@ -98,40 +79,28 @@ async function getRouteWithWaypoint(
     start,
     waypoint,
     end
-){
+) {
 
 
     const url =
+        "https://router.project-osrm.org/route/v1/driving/" +
 
-    "https://router.project-osrm.org/route/v1/driving/"
+        start.lon + "," + start.lat +
 
-    + start.lon
-    + ","
-    + start.lat
+        ";" +
 
-    + ";"
+        waypoint.lon + "," + waypoint.lat +
 
-    + waypoint.lon
-    + ","
-    + waypoint.lat
+        ";" +
 
-    + ";"
+        end.lon + "," + end.lat +
 
-    + end.lon
-    + ","
-    + end.lat
-
-    + "?overview=full&geometries=geojson";
+        "?overview=full&geometries=geojson";
 
 
+    const response = await fetch(url);
 
-    const response =
-    await fetch(url);
-
-
-
-    const data =
-    await response.json();
+    const data = await response.json();
 
 
 
@@ -144,9 +113,7 @@ async function getRouteWithWaypoint(
     }
 
 
-
     return data.routes[0];
-
 
 }
 
@@ -160,50 +127,43 @@ async function getRouteWithWaypoint(
 async function reverseGeocode(
     lat,
     lon
-){
+) {
 
 
     const url =
+        "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
 
-    "https://nominatim.openstreetmap.org/reverse?format=json&lat="
+        lat +
 
-    + lat
+        "&lon=" +
 
-    + "&lon="
-
-    + lon;
-
-
-
-    const response =
-    await fetch(url);
+        lon;
 
 
 
-    const data =
-    await response.json();
+    const response = await fetch(url);
+
+    const data = await response.json();
 
 
 
-
-    let address =
-    data.address;
+    const address = data.address || {};
 
 
 
-    let name =
+    const name =
 
-    address.city
-    ||
-    address.town
-    ||
-    address.village
-    ||
-    address.municipality
-    ||
-    address.county
-    ||
-    "Località non identificata";
+        address.city ||
+
+        address.town ||
+
+        address.village ||
+
+        address.municipality ||
+
+        address.county ||
+
+        "Località non identificata";
 
 
 
@@ -226,19 +186,16 @@ async function reverseGeocode(
 
 
 
+
 function calculateStopPoint(
     coordinates,
     camperDuration,
     departureTime,
     stopTime
-){
+) {
 
 
-    if(
-        !departureTime
-        ||
-        !stopTime
-    ){
+    if (!departureTime || !stopTime) {
 
         return null;
 
@@ -247,91 +204,106 @@ function calculateStopPoint(
 
 
     const startMinutes =
-
-    timeToMinutes(
-        departureTime
-    );
+        timeToMinutes(departureTime);
 
 
 
-    const targetMinutes =
-
-    timeToMinutes(
-        stopTime
-    );
+    const stopMinutes =
+        timeToMinutes(stopTime);
 
 
 
     let elapsedMinutes =
-
-    targetMinutes - startMinutes;
-
-
-
-    if(elapsedMinutes < 0){
-
-        elapsedMinutes += 24 * 60;
-
-    }
+        stopMinutes - startMinutes;
 
 
 
+    if (elapsedMinutes < 0) {
 
-    const targetSeconds =
-
-    elapsedMinutes * 60;
-
-
-
-
-    const totalSeconds =
-
-    camperDuration;
-
-
-
-
-    let ratio =
-
-    targetSeconds / totalSeconds;
-
-
-
-    if(ratio < 0){
-
-        ratio = 0;
+        elapsedMinutes += 1440;
 
     }
 
 
 
-    if(ratio > 1){
+    const elapsedSeconds =
+        elapsedMinutes * 60;
 
-        ratio = 1;
+
+
+    const ratio =
+        elapsedSeconds / camperDuration;
+
+
+
+    if (ratio >= 1) {
+
+        return {
+
+            lat: coordinates[coordinates.length - 1][1],
+
+            lon: coordinates[coordinates.length - 1][0]
+
+        };
 
     }
 
 
 
-
-
-    const index =
-
-    Math.floor(
-        coordinates.length * ratio
-    );
+    const targetDistance =
+        calculateTotalDistance(coordinates)
+        *
+        ratio;
 
 
 
-    const point =
-
-    coordinates[index];
+    let travelled = 0;
 
 
 
-    if(!point){
+    for (
+        let i = 1;
+        i < coordinates.length;
+        i++
+    ) {
 
-        return null;
+
+        const previous =
+            coordinates[i - 1];
+
+
+        const current =
+            coordinates[i];
+
+
+
+        const segment =
+            distanceBetweenPoints(
+                previous[1],
+                previous[0],
+                current[1],
+                current[0]
+            );
+
+
+
+        travelled += segment;
+
+
+
+        if (travelled >= targetDistance) {
+
+
+            return {
+
+                lat: current[1],
+
+                lon: current[0]
+
+            };
+
+
+        }
 
     }
 
@@ -339,14 +311,11 @@ function calculateStopPoint(
 
     return {
 
+        lat: coordinates[coordinates.length - 1][1],
 
-        lat: point[1],
-
-        lon: point[0]
-
+        lon: coordinates[coordinates.length - 1][0]
 
     };
-
 
 }
 
@@ -357,11 +326,109 @@ function calculateStopPoint(
 
 
 
-function timeToMinutes(time){
+function calculateTotalDistance(
+    coordinates
+) {
+
+
+    let total = 0;
+
+
+
+    for (
+        let i = 1;
+        i < coordinates.length;
+        i++
+    ) {
+
+
+        total += distanceBetweenPoints(
+
+            coordinates[i-1][1],
+
+            coordinates[i-1][0],
+
+            coordinates[i][1],
+
+            coordinates[i][0]
+
+        );
+
+
+    }
+
+
+
+    return total;
+
+}
+
+
+
+
+
+
+
+function distanceBetweenPoints(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
+
+
+    const R = 6371000;
+
+
+    const p1 =
+        lat1 * Math.PI / 180;
+
+
+    const p2 =
+        lat2 * Math.PI / 180;
+
+
+    const deltaLat =
+        (lat2 - lat1) * Math.PI / 180;
+
+
+    const deltaLon =
+        (lon2 - lon1) * Math.PI / 180;
+
+
+
+    const a =
+
+        Math.sin(deltaLat / 2) ** 2 +
+
+        Math.cos(p1) *
+
+        Math.cos(p2) *
+
+        Math.sin(deltaLon / 2) ** 2;
+
+
+
+    return R *
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1-a)
+        );
+
+}
+
+
+
+
+
+
+
+function timeToMinutes(time) {
 
 
     const parts =
-    time.split(":");
+        time.split(":");
 
 
 
@@ -374,6 +441,5 @@ function timeToMinutes(time){
         Number(parts[1])
 
     );
-
 
 }
