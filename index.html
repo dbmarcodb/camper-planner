@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Camper Planner</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>🚐 Camper Planner</h1>
+
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<label>Partenza</label>
+<input id="start" type="text">
+
+<label>Tappa (facoltativa)</label>
+<input id="waypoint" type="text">
+
+<label>Arrivo</label>
+<input id="end" type="text">
+
+<button id="routeButton">
+
+Calcola percorso
+
+</button>
+
+</div>
+
+<div id="map"></div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script src="app.js"></script>
+
+</body>
+</html>
