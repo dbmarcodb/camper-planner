@@ -742,3 +742,53 @@ function(){
 
 
 });
+
+document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+
+    document
+    .getElementById("clearButton")
+    .addEventListener(
+        "click",
+        function(){
+
+
+
+            document.getElementById("start").value = "";
+
+            document.getElementById("stop").value = "";
+
+            document.getElementById("end").value = "";
+
+            document.getElementById("departureTime").value = "";
+
+            document.getElementById("stopTime").value = "";
+
+
+
+            document.getElementById("results").innerHTML = "";
+
+
+
+            localStorage.removeItem("start");
+
+            localStorage.removeItem("stop");
+
+            localStorage.removeItem("end");
+
+            localStorage.removeItem("departureTime");
+
+            localStorage.removeItem("stopTime");
+
+
+
+            clearMap();
+
+
+        }
+    );
+
+
+});
