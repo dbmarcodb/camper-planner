@@ -110,9 +110,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-            drawRoute(
-                route.geometry.coordinates
-            );
+          if (stopPoint) {
+
+    drawRouteSplit(
+        route.geometry.coordinates,
+        stopPoint.lat,
+        stopPoint.lon
+    );
+
+} else {
+
+    drawRoute(
+        route.geometry.coordinates
+    );
+
+}  
 
 
 
