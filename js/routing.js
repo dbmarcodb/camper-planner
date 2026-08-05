@@ -151,19 +151,40 @@ async function reverseGeocode(
 
 
 
-    const name =
+   const placeName =
 
-        address.city ||
+    address.city ||
 
-        address.town ||
+    address.town ||
 
-        address.village ||
+    address.village ||
 
-        address.municipality ||
+    address.municipality ||
 
-        address.county ||
+    address.hamlet ||
 
-        "Località non identificata";
+    "Località non identificata";
+
+
+const province =
+
+    address.county ||
+
+    address.state_district ||
+
+    "";
+
+
+const name =
+
+    province
+    ?
+
+    placeName + " (" + province + ")"
+
+    :
+
+    placeName;
 
 
 
