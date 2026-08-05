@@ -63,13 +63,18 @@ document.addEventListener("DOMContentLoaded", function(){
             );
 
 
-            alert(
-                "Distanza: "
-                + (route.distance/1000).toFixed(1)
-                + " km\nTempo: "
-                + Math.round(route.duration/3600)
-                + " ore"
-            );
+           document.getElementById("results").innerHTML =
+`
+<b>Percorso calcolato</b><br><br>
+
+Distanza:
+${(route.distance/1000).toFixed(1)} km
+<br>
+
+Tempo stimato:
+${Math.floor(route.duration/3600)} ore 
+${Math.round((route.duration%3600)/60)} minuti
+`;
 
 
         } catch(error) {
