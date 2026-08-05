@@ -743,52 +743,51 @@ function(){
 
 });
 
-document.addEventListener(
-"DOMContentLoaded",
-function(){
+const clearButton =
+document.getElementById("clearButton");
 
 
-    document
-    .getElementById("clearButton")
-    .addEventListener(
-        "click",
-        function(){
+if (clearButton) {
 
 
-
-            document.getElementById("start").value = "";
-
-            document.getElementById("stop").value = "";
-
-            document.getElementById("end").value = "";
-
-            document.getElementById("departureTime").value = "";
-
-            document.getElementById("stopTime").value = "";
+    clearButton.onclick = function(){
 
 
+        document.getElementById("start").value = "";
 
-            document.getElementById("results").innerHTML = "";
+        document.getElementById("stop").value = "";
+
+        document.getElementById("end").value = "";
+
+        document.getElementById("departureTime").value = "";
+
+        document.getElementById("stopTime").value = "";
+
+
+        document.getElementById("results").innerHTML = "";
 
 
 
-            localStorage.removeItem("start");
+        localStorage.removeItem("start");
 
-            localStorage.removeItem("stop");
+        localStorage.removeItem("stop");
 
-            localStorage.removeItem("end");
+        localStorage.removeItem("end");
 
-            localStorage.removeItem("departureTime");
+        localStorage.removeItem("departureTime");
 
-            localStorage.removeItem("stopTime");
+        localStorage.removeItem("stopTime");
 
 
+
+        if (typeof clearMap === "function") {
 
             clearMap();
 
-
         }
-    );
 
 
-});
+    };
+
+
+}
