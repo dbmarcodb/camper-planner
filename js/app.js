@@ -110,23 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-          if (stopPoint) {
-
-    drawRouteSplit(
-        route.geometry.coordinates,
-        stopPoint.lat,
-        stopPoint.lon
-    );
-
-} else {
-
-    drawRoute(
-        route.geometry.coordinates
-    );
-
-}  
-
-
+    
 
             addMarker(
                 start.lat,
@@ -166,7 +150,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 stopTime
             );
 
+if (stopPoint) {
 
+    drawRouteSplit(
+        route.geometry.coordinates,
+        stopPoint.lat,
+        stopPoint.lon
+    );
+
+}
 
 
             let stopTextResult =
