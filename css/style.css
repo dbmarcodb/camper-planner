@@ -205,3 +205,51 @@ button {
 
 
 }
+
+.autocomplete {
+
+    position: relative;
+
+}
+
+
+
+.suggestions {
+
+    position: absolute;
+
+    left: 0;
+
+    right: 0;
+
+    top: 100%;
+
+    background: white;
+
+    border: 1px solid #ccc;
+
+    border-top: none;
+
+    z-index: 1000;
+
+}
+
+
+
+.suggestions div {
+
+    padding: 10px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+}
+
+
+
+.suggestions div:hover {
+
+    background: #eeeeee;
+
+}
