@@ -1,8 +1,13 @@
 let map;
 
-let routeLayer;
+let routeLayer1;
+
+let routeLayer2;
 
 let markers = [];
+
+let stopIndex = null;
+
 
 
 
@@ -43,25 +48,33 @@ function initMap(){
 
 
 
+
 function clearMap(){
 
 
-    if(routeLayer){
+    if(routeLayer1){
 
-        map.removeLayer(
-            routeLayer
-        );
+        map.removeLayer(routeLayer1);
+
+    }
+
+
+    if(routeLayer2){
+
+        map.removeLayer(routeLayer2);
 
     }
 
 
 
     markers.forEach(
+
         function(marker){
 
             map.removeLayer(marker);
 
         }
+
     );
 
 
@@ -70,7 +83,6 @@ function clearMap(){
 
 
 }
-
 
 
 
@@ -91,6 +103,7 @@ function drawRoute(
     const latlngs =
 
     coordinates.map(
+
         function(point){
 
             return [
@@ -107,7 +120,7 @@ function drawRoute(
 
 
 
-    routeLayer =
+    routeLayer1 =
 
     L.polyline(
 
@@ -115,7 +128,9 @@ function drawRoute(
 
         {
 
-            weight: 5
+            weight: 5,
+
+            color: "green"
 
         }
 
@@ -124,12 +139,203 @@ function drawRoute(
 
 
     map.fitBounds(
-        routeLayer.getBounds()
+
+        routeLayer1.getBounds()
+
     );
 
 
 }
 
+
+
+
+
+
+
+
+function drawRouteSplit(
+    coordinates,
+    stopLat,
+    stopLon
+){
+
+
+    clearMap();
+
+
+
+    const stopPosition =
+
+    findClosestPointIndex(
+
+        coordinates,
+
+        stopLat,
+
+        stopLon
+
+    );
+
+
+
+    const firstPart =
+
+    coordinates
+    .slice(
+        0,
+        stopPosition + 1
+    );
+
+
+
+    const secondPart =
+
+    coordinates
+    .slice(
+        stopPosition
+    );
+
+
+
+
+
+    routeLayer1 =
+
+    L.polyline(
+
+        convertCoordinates(firstPart),
+
+        {
+
+            weight: 6,
+
+            color: "green"
+
+        }
+
+    ).addTo(map);
+
+
+
+
+
+    routeLayer2 =
+
+    L.polyline(
+
+        convertCoordinates(secondPart),
+
+        {
+
+            weight: 6,
+
+            color: "blue"
+
+        }
+
+    ).addTo(map);
+
+
+
+    map.fitBounds(
+
+        routeLayer1.getBounds()
+
+    );
+
+
+}
+
+
+
+
+
+
+
+
+function convertCoordinates(
+    coordinates
+){
+
+
+    return coordinates.map(
+
+        function(point){
+
+            return [
+
+                point[1],
+
+                point[0]
+
+            ];
+
+        }
+
+    );
+
+
+}
+
+
+
+
+
+
+
+
+function findClosestPointIndex(
+    coordinates,
+    lat,
+    lon
+){
+
+
+    let minimum = Infinity;
+
+    let index = 0;
+
+
+
+    coordinates.forEach(
+
+        function(point, i){
+
+
+            const distance =
+
+            Math.sqrt(
+
+                Math.pow(point[1]-lat,2)
+
+                +
+
+                Math.pow(point[0]-lon,2)
+
+            );
+
+
+
+            if(distance < minimum){
+
+                minimum = distance;
+
+                index = i;
+
+            }
+
+
+        }
+
+    );
+
+
+
+    return index;
+
+
+}
 
 
 
@@ -145,6 +351,42 @@ function addMarker(
 ){
 
 
+    let color = "green";
+
+
+
+    if(text === "Destinazione"){
+
+        color = "red";
+
+    }
+
+
+
+    const icon =
+
+    L.divIcon({
+
+        className:
+        "custom-marker",
+
+        html:
+
+        `<div style="
+        background:${color};
+        width:18px;
+        height:18px;
+        border-radius:50%;
+        border:2px solid white;">
+        </div>`
+
+
+    });
+
+
+
+
+
     const marker =
 
     L.marker(
@@ -155,7 +397,13 @@ function addMarker(
 
             lon
 
-        ]
+        ],
+
+        {
+
+            icon: icon
+
+        }
 
     )
 
@@ -168,9 +416,7 @@ function addMarker(
     markers.push(marker);
 
 
-
 }
-
 
 
 
@@ -185,6 +431,25 @@ function addStopMarker(
 ){
 
 
+    const icon =
+
+    L.divIcon({
+
+        className:
+        "stop-marker",
+
+        html:
+
+        `<div style="
+        font-size:32px;">
+        ⭐
+        </div>`
+
+
+    });
+
+
+
     const marker =
 
     L.marker(
@@ -195,19 +460,21 @@ function addStopMarker(
 
             lon
 
-        ]
+        ],
+
+        {
+
+            icon: icon
+
+        }
 
     )
 
-    .addTo(map);
+    .addTo(map)
 
+    .bindPopup(
 
-
-    marker.bindPopup(
-
-        "<b>Sosta prevista</b><br>" +
-
-        "Punto stimato"
+        "<b>Sosta prevista</b>"
 
     );
 
