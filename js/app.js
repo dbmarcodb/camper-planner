@@ -229,7 +229,46 @@ if (stopPoint) {
                 (camperDuration % 3600) / 60
             );
 
+const totalDistanceKm =
+route.distance / 1000;
 
+const stopRatio =
+Math.min(
+    1,
+    (
+        (
+            timeToMinutes(stopTime)
+            -
+            timeToMinutes(departureTime)
+            +
+            1440
+        ) % 1440
+    ) * 60
+    /
+    camperDuration
+);
+
+const travelledKm =
+totalDistanceKm * stopRatio;
+
+const remainingKm =
+Math.max(
+    0,
+    totalDistanceKm - travelledKm
+);
+
+const stopDrivingSeconds =
+camperDuration * stopRatio;
+
+const stopDrivingHours =
+Math.floor(
+    stopDrivingSeconds / 3600
+);
+
+const stopDrivingMinutes =
+Math.round(
+    (stopDrivingSeconds % 3600) / 60
+);
 
             document
             .getElementById("results")
@@ -243,7 +282,7 @@ if (stopPoint) {
             <br>
 
             <b>
-            ${(route.distance/1000).toFixed(1)}
+            ${(route.distance/1000).toFixed(0)}
             km
             </b>
 
@@ -295,25 +334,58 @@ if (stopPoint) {
             <br><br>
 
 
-            Coordinate:
+           <b>
 
-            <br>
+Km percorsi
 
-            ${stopCoordinates}
+</b>
 
+<br>
 
-            <br><br>
+${travelledKm.toFixed(0)} km
 
+<br><br>
 
-            Velocità camper:
+<b>
 
-            ${speedValue || 100}%
+Tempo di guida
 
+</b>
 
-            <br><br>
+<br>
 
+${stopDrivingHours} ore
+${stopDrivingMinutes} minuti
 
-            <button 
+<br><br>
+
+Coordinate
+
+<br>
+
+${stopCoordinates}
+
+<br><br>
+
+<b>
+
+Km rimanenti
+
+</b>
+
+<br>
+
+${remainingKm.toFixed(0)} km
+
+<br><br>
+
+Velocità camper:
+
+${speedValue || 100}%
+
+<br><br>
+
+<button
             class="copy-button"
             onclick="copyStopLocation()">
 
