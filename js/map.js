@@ -38,7 +38,7 @@ function initMap(){
             <br><br>
 
             <button onclick="setMapPoint('stop','${lat},${lon}')">
-            ⭐ Sosta
+            🚩 Tappa facoltativa
             </button>
 
             <br><br>
