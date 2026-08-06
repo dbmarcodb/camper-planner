@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     initMap();
-
+    loadData();
 
 
     document
@@ -433,42 +433,6 @@ ${speedValue || 100}%
 });
 
 
-
-
-
-function saveData() {
-
-
-    const fields = [
-        "start",
-        "stop",
-        "end",
-        "camperSpeedFactor",
-        "departureTime",
-        "stopTime"
-    ];
-
-
-
-    fields.forEach(function(id){
-
-
-        localStorage.setItem(
-            id,
-            document.getElementById(id).value
-        );
-
-
-    });
-
-
-}
-
-
-
-
-
-
 function copyStopLocation(){
 
 
@@ -481,185 +445,6 @@ function copyStopLocation(){
 
 
 
-
-
-
-window.onload = function(){
-
-
-    const fields = [
-        "start",
-        "stop",
-        "end",
-        "camperSpeedFactor",
-        "departureTime",
-        "stopTime"
-    ];
-
-
-
-    fields.forEach(function(id){
-
-
-        const value =
-        localStorage.getItem(id);
-
-
-
-        if(value !== null){
-
-            document.getElementById(id).value =
-            value;
-
-        }
-
-
-    });
-
-
-};
-
-function setupAutocomplete(inputId, listId){
-
-
-const input =
-document.getElementById(inputId);
-
-
-const list =
-document.getElementById(listId);
-
-
-
-let timer;
-
-
-
-input.addEventListener(
-"input",
-function(){
-
-
-clearTimeout(timer);
-
-
-
-timer=setTimeout(
-async function(){
-
-
-const value =
-input.value;
-
-
-
-if(value.length < 3){
-
-list.innerHTML="";
-return;
-
-}
-
-
-
-const url =
-
-"https://nominatim.openstreetmap.org/search?format=json&q="
-
-+
-
-encodeURIComponent(value)
-
-+
-
-"&limit=5";
-
-
-
-const response =
-await fetch(url);
-
-
-
-const results =
-await response.json();
-
-
-
-list.innerHTML="";
-
-
-
-results.forEach(
-function(item){
-
-
-const div =
-document.createElement("div");
-
-
-div.innerText =
-item.display_name;
-
-
-
-div.onclick =
-function(){
-
-
-input.value =
-item.display_name;
-
-
-list.innerHTML="";
-
-
-};
-
-
-
-list.appendChild(div);
-
-
-
-});
-
-
-},
-500);
-
-
-});
-
-
-}
-
-
-
-document.addEventListener(
-"DOMContentLoaded",
-function(){
-
-
-setupAutocomplete(
-"start",
-"startSuggestions"
-);
-
-
-setupAutocomplete(
-"stop",
-"stopSuggestions"
-);
-
-
-setupAutocomplete(
-"end",
-"endSuggestions"
-);
-
-
-});
 
 
 function setupAutocomplete(inputId, suggestionsId) {
@@ -840,16 +625,7 @@ if (clearButton) {
 
 
 
-        localStorage.removeItem("start");
-
-        localStorage.removeItem("stop");
-
-        localStorage.removeItem("end");
-
-        localStorage.removeItem("departureTime");
-
-        localStorage.removeItem("stopTime");
-
+        clearSavedData();
 
 
         if (typeof clearMap === "function") {
