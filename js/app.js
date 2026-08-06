@@ -305,7 +305,7 @@ Math.round(
             <br><br>
 
 
-            A velocità standard si impiegherebbero:
+            A velocità di crociera con un'auto standard si impiegherebbero:
 
             <br>
 
