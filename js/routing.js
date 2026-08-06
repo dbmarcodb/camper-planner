@@ -1,4 +1,58 @@
+function parseCoordinates(text) {
+
+    text = text.trim();
+
+    // Formati accettati:
+    // 45.123,11.456
+    // 45.123 11.456
+    // 45.123;11.456
+
+    const match = text.match(
+        /^\s*(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)\s*$/
+    );
+
+    if (!match) {
+
+        return null;
+
+    }
+
+    const lat = parseFloat(match[1]);
+    const lon = parseFloat(match[2]);
+
+    if (
+        lat < -90 || lat > 90 ||
+        lon < -180 || lon > 180
+    ) {
+
+        return null;
+
+    }
+
+    return {
+
+        lat: lat,
+
+        lon: lon
+
+    };
+
+}
+
+
+
+
+
+
 async function geocode(place) {
+
+    const coordinates = parseCoordinates(place);
+
+    if (coordinates) {
+
+        return coordinates;
+
+    }
 
     const url =
         "https://nominatim.openstreetmap.org/search?format=json&q=" +
@@ -74,7 +128,6 @@ async function getRoute(start, end) {
 
 
 
-
 async function getRouteWithWaypoint(
     start,
     waypoint,
@@ -123,7 +176,6 @@ async function getRouteWithWaypoint(
 
 
 
-
 async function reverseGeocode(
     lat,
     lon
@@ -151,40 +203,41 @@ async function reverseGeocode(
 
 
 
-   const placeName =
+    const placeName =
 
-    address.city ||
+        address.city ||
 
-    address.town ||
+        address.town ||
 
-    address.village ||
+        address.village ||
 
-    address.municipality ||
+        address.municipality ||
 
-    address.hamlet ||
+        address.hamlet ||
 
-    "Località non identificata";
-
-
-const province =
-
-    address.county ||
-
-    address.state_district ||
-
-    "";
+        "Località non identificata";
 
 
-const name =
+    const province =
 
-    province
-    ?
+        address.county ||
 
-    placeName + " (" + province + ")"
+        address.state_district ||
 
-    :
+        "";
 
-    placeName;
+
+    const name =
+
+        province
+
+        ?
+
+        placeName + " (" + province + ")"
+
+        :
+
+        placeName;
 
 
 
@@ -365,9 +418,9 @@ function calculateTotalDistance(
 
         total += distanceBetweenPoints(
 
-            coordinates[i-1][1],
+            coordinates[i - 1][1],
 
-            coordinates[i-1][0],
+            coordinates[i - 1][0],
 
             coordinates[i][1],
 
@@ -434,7 +487,7 @@ function distanceBetweenPoints(
         2 *
         Math.atan2(
             Math.sqrt(a),
-            Math.sqrt(1-a)
+            Math.sqrt(1 - a)
         );
 
 }
