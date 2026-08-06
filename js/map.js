@@ -15,9 +15,45 @@ let stopIndex = null;
 
 function initMap(){
 
-
     map = L.map("map");
 
+    map.doubleClickZoom.disable();
+
+    map.on("dblclick", function(e){
+
+        const lat = e.latlng.lat.toFixed(6);
+        const lon = e.latlng.lng.toFixed(6);
+
+        const html = `
+            <b>Punto selezionato</b><br><br>
+
+            ${lat}, ${lon}
+
+            <br><br>
+
+            <button onclick="setMapPoint('start','${lat},${lon}')">
+            🟢 Partenza
+            </button>
+
+            <br><br>
+
+            <button onclick="setMapPoint('stop','${lat},${lon}')">
+            ⭐ Sosta
+            </button>
+
+            <br><br>
+
+            <button onclick="setMapPoint('end','${lat},${lon}')">
+            🔴 Destinazione
+            </button>
+        `;
+
+        L.popup()
+            .setLatLng(e.latlng)
+            .setContent(html)
+            .openOn(map);
+
+    });
 
     L.tileLayer(
 
@@ -482,5 +518,13 @@ function addStopMarker(
 
     markers.push(marker);
 
+
+}
+
+function setMapPoint(field, value){
+
+    document.getElementById(field).value = value;
+
+    map.closePopup();
 
 }
