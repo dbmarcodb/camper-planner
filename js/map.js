@@ -8,7 +8,12 @@ let markers = [];
 
 let stopIndex = null;
 
+// Modalità selezione dalla mappa: null oppure "start" / "stop" / "end"
+let selectionMode = null;
 
+// Marker di conferma per ciascun campo: se l'utente sceglie di nuovo
+// lo stesso campo, il marker precedente viene sostituito
+let selectionMarkers = {};
 
 
 
@@ -17,41 +22,22 @@ function initMap(){
 
     map = L.map("map");
 
-    map.doubleClickZoom.disable();
+    map.on("click", function(e){
 
-    map.on("dblclick", function(e){
+        if (!selectionMode) {
+            return;
+        }
 
-        const lat = e.latlng.lat.toFixed(6);
-        const lon = e.latlng.lng.toFixed(6);
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
 
-        const html = `
-            <b>Punto selezionato</b><br><br>
+        setSelectionMarker(selectionMode, lat, lon);
 
-            ${lat}, ${lon}
+        if (typeof onMapPointSelected === "function") {
+            onMapPointSelected(selectionMode, lat, lon);
+        }
 
-            <br><br>
-
-            <button onclick="setMapPoint('start','${lat},${lon}')">
-            🟢 Partenza
-            </button>
-
-            <br><br>
-
-            <button onclick="setMapPoint('stop','${lat},${lon}')">
-            🚩 Tappa facoltativa
-            </button>
-
-            <br><br>
-
-            <button onclick="setMapPoint('end','${lat},${lon}')">
-            🔴 Destinazione
-            </button>
-        `;
-
-        L.popup()
-            .setLatLng(e.latlng)
-            .setContent(html)
-            .openOn(map);
+        selectionMode = null;
 
     });
 
@@ -116,6 +102,8 @@ function clearMap(){
 
 
     markers = [];
+
+    selectionMarkers = {};
 
 
 }
@@ -521,10 +509,101 @@ function addStopMarker(
 
 }
 
-function setMapPoint(field, value){
+function startMapSelection(field){
 
-    document.getElementById(field).value = value;
+    selectionMode = field;
 
-    map.closePopup();
+}
+
+
+
+function stopMapSelection(){
+
+    selectionMode = null;
+
+}
+
+
+
+function selectionIconFor(field){
+
+    if(field === "start"){
+        return "🟢";
+    }
+
+    if(field === "stop"){
+        return "🚩";
+    }
+
+    if(field === "end"){
+        return "🔵";
+    }
+
+    return "📍";
+
+}
+
+
+
+function setSelectionMarker(field, lat, lon){
+
+
+    if(selectionMarkers[field]){
+
+        map.removeLayer(selectionMarkers[field]);
+
+        const index = markers.indexOf(selectionMarkers[field]);
+
+        if(index > -1){
+            markers.splice(index, 1);
+        }
+
+    }
+
+
+    const icon = L.divIcon({
+
+        className: "selection-marker",
+
+        html: `<div style="font-size:28px; line-height:28px;">${selectionIconFor(field)}</div>`
+
+    });
+
+
+    const marker = L.marker(
+        [lat, lon],
+        { icon: icon }
+    ).addTo(map);
+
+
+    selectionMarkers[field] = marker;
+
+    markers.push(marker);
+
+}
+
+
+
+function addWaypointMarker(lat, lon, text){
+
+
+    const icon = L.divIcon({
+
+        className: "waypoint-marker",
+
+        html: `<div style="font-size:30px; line-height:30px;">🚩</div>`
+
+    });
+
+
+    const marker = L.marker(
+        [lat, lon],
+        { icon: icon }
+    )
+    .addTo(map)
+    .bindPopup(text);
+
+
+    markers.push(marker);
 
 }

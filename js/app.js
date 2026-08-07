@@ -1,5 +1,15 @@
 let currentStopLocation = "";
 
+// Icone da mostrare sui pulsanti 📍 una volta scelta la posizione dalla mappa
+const mapSelectIcons = {
+    start: "🟢",
+    stop: "🚩",
+    end: "🔵"
+};
+
+// Campo attualmente in attesa di un tap sulla mappa (null = nessuno)
+let activeSelectionField = null;
+
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -7,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     initMap();
     loadData();
+    setupMapSelectionButtons();
 
 
     document
@@ -79,19 +90,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let route;
 
+            let waypointStop = null;
+
 
 
             if (stopText.trim() !== "") {
 
 
-                const stop =
+                waypointStop =
                 await geocode(stopText);
 
 
                 route =
                 await getRouteWithWaypoint(
                     start,
-                    stop,
+                    waypointStop,
                     end
                 );
 
@@ -177,6 +190,16 @@ if (stopPoint) {
                 end.lon,
                 "Destinazione"
             );
+
+            if (waypointStop) {
+
+                addWaypointMarker(
+                    waypointStop.lat,
+                    waypointStop.lon,
+                    "Tappa: " + stopText
+                );
+
+            }
 
                 const location =
                 await reverseGeocode(
@@ -433,6 +456,192 @@ ${speedValue || 100}%
 });
 
 
+function setupMapSelectionButtons(){
+
+    const buttonsByField = {
+        start: document.getElementById("selectStartOnMap"),
+        stop: document.getElementById("selectStopOnMap"),
+        end: document.getElementById("selectEndOnMap")
+    };
+
+    Object.keys(buttonsByField).forEach(function(field){
+
+        const button = buttonsByField[field];
+
+        if(!button){
+            return;
+        }
+
+        button.addEventListener("click", function(){
+
+            if(activeSelectionField === field){
+                exitMapSelection();
+                return;
+            }
+
+            enterMapSelection(field);
+
+        });
+
+    });
+
+}
+
+
+
+function enterMapSelection(field){
+
+    activeSelectionField = field;
+
+    ["start", "stop", "end"].forEach(function(f){
+
+        const button = document.getElementById(
+            "select" + f.charAt(0).toUpperCase() + f.slice(1) + "OnMap"
+        );
+
+        if(button){
+            button.classList.remove("selecting");
+        }
+
+    });
+
+    const activeButton = document.getElementById(
+        "select" + field.charAt(0).toUpperCase() + field.slice(1) + "OnMap"
+    );
+
+    if(activeButton){
+        activeButton.classList.add("selecting");
+    }
+
+    startMapSelection(field);
+
+    showMapHint("Tocca la mappa per impostare: " + fieldLabel(field));
+
+    const mapElement = document.getElementById("map");
+
+    if(mapElement){
+        mapElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+}
+
+
+
+function exitMapSelection(){
+
+    activeSelectionField = null;
+
+    ["start", "stop", "end"].forEach(function(f){
+
+        const button = document.getElementById(
+            "select" + f.charAt(0).toUpperCase() + f.slice(1) + "OnMap"
+        );
+
+        if(button){
+            button.classList.remove("selecting");
+        }
+
+    });
+
+    stopMapSelection();
+
+    hideMapHint();
+
+}
+
+
+
+function fieldLabel(field){
+
+    if(field === "start"){
+        return "Partenza";
+    }
+
+    if(field === "stop"){
+        return "Tappa facoltativa";
+    }
+
+    return "Destinazione";
+
+}
+
+
+
+function showMapHint(text){
+
+    const hint = document.getElementById("mapSelectionHint");
+
+    if(!hint){
+        return;
+    }
+
+    hint.textContent = text;
+    hint.style.display = "block";
+
+}
+
+
+
+function hideMapHint(){
+
+    const hint = document.getElementById("mapSelectionHint");
+
+    if(!hint){
+        return;
+    }
+
+    hint.style.display = "none";
+
+}
+
+
+
+// Chiamata da map.js quando l'utente tocca la mappa in modalità selezione
+async function onMapPointSelected(field, lat, lon){
+
+    const input = document.getElementById(field);
+
+    if(input){
+
+        input.value =
+            lat.toFixed(6) + ", " + lon.toFixed(6);
+
+        try {
+
+            const location = await reverseGeocode(lat, lon);
+
+            if(location && location.name && location.name !== "Località non identificata"){
+                input.value = location.name;
+            }
+
+        } catch(error){
+            // in caso di errore lasciamo le coordinate nel campo
+        }
+
+    }
+
+    const button = document.getElementById(
+        "select" + field.charAt(0).toUpperCase() + field.slice(1) + "OnMap"
+    );
+
+    if(button){
+        button.textContent = mapSelectIcons[field];
+        button.classList.remove("selecting");
+    }
+
+    activeSelectionField = null;
+
+    hideMapHint();
+
+    if(input){
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        input.focus();
+    }
+
+}
+
+
+
 function copyStopLocation(){
 
 
@@ -446,159 +655,6 @@ function copyStopLocation(){
 
 
 
-
-function setupAutocomplete(inputId, suggestionsId) {
-
-
-    const input =
-    document.getElementById(inputId);
-
-
-    const suggestions =
-    document.getElementById(suggestionsId);
-
-
-
-    let timer;
-
-
-
-    input.addEventListener(
-        "input",
-        function(){
-
-
-            clearTimeout(timer);
-
-
-
-            timer = setTimeout(
-                async function(){
-
-
-                    const text =
-                    input.value.trim();
-
-
-
-                    if(text.length < 3){
-
-
-                        suggestions.innerHTML = "";
-
-                        return;
-
-
-                    }
-
-
-
-
-                    const url =
-
-                    "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
-
-                    +
-
-                    encodeURIComponent(text);
-
-
-
-
-                    const response =
-                    await fetch(url);
-
-
-
-                    const results =
-                    await response.json();
-
-
-
-
-                    suggestions.innerHTML = "";
-
-
-
-
-                    results.forEach(
-                        function(place){
-
-
-
-                            const item =
-                            document.createElement("div");
-
-
-
-                            item.innerText =
-                            place.display_name;
-
-
-
-
-                            item.onclick =
-                            function(){
-
-
-                                input.value =
-                                place.display_name;
-
-
-                                suggestions.innerHTML =
-                                "";
-
-
-                            };
-
-
-
-                            suggestions.appendChild(item);
-
-
-
-                        }
-                    );
-
-
-
-                },
-
-                500
-
-            );
-
-
-        }
-
-    );
-
-
-}
-
-
-
-
-
-
-document.addEventListener(
-"DOMContentLoaded",
-function(){
-
-
-    setupAutocomplete(
-        "start",
-        "startSuggestions"
-    );
-
-
-    setupAutocomplete(
-        "end",
-        "endSuggestions"
-    );
-
-
-});
 
 const clearButton =
 document.getElementById("clearButton");
