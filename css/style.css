@@ -263,10 +263,29 @@ button {
 
 }
 
+.location-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.location-row input {
+    flex: 1;
+    min-width: 0;
+}
+
 .map-select-btn{
-    margin-left:6px;
-    width:34px;
-    height:34px;
+    margin-top:0;
+    margin-left:0;
+    width:42px;
+    height:42px;
+    padding:0;
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    flex-shrink:0;
     cursor:pointer;
     border-radius:6px;
     border:1px solid #bbb;
@@ -278,8 +297,26 @@ button {
     background:#eef6ff;
 }
 
-.map-select-btn.active{
+.map-select-btn.selecting{
     background:#2d7ff9;
     color:#fff;
     border-color:#2d7ff9;
+    animation: pulse-select 1s infinite;
+}
+
+@keyframes pulse-select {
+    0%   { box-shadow: 0 0 0 0 rgba(45,127,249,0.5); }
+    70%  { box-shadow: 0 0 0 8px rgba(45,127,249,0); }
+    100% { box-shadow: 0 0 0 0 rgba(45,127,249,0); }
+}
+
+.map-hint{
+    background:#2d7ff9;
+    color:#fff;
+    padding:10px 14px;
+    border-radius:8px;
+    margin-top:16px;
+    font-size:14px;
+    text-align:center;
+    font-weight:bold;
 }
