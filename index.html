@@ -50,48 +50,41 @@
         </label>
 
         <div class="autocomplete">
-
-<div class="autocomplete">
-
-<div class="autocomplete location-row">
-
-    <input
-        id="start"
-        type="text"
-        placeholder="Inserisci località di partenza">
-
-    <button
-        id="selectStartOnMap"
-        type="button"
-        class="map-select-btn"
-        title="Seleziona dalla mappa">📍</button>
-
-</div>
-
-<div id="startSuggestions" class="suggestions"></div>
+            <div class="location-row">
+                <input
+                    id="start"
+                    type="text"
+                    placeholder="Inserisci località di partenza"
+                    autocomplete="off">
+                <button
+                    id="selectStartOnMap"
+                    type="button"
+                    class="map-select-btn"
+                    title="Seleziona dalla mappa">📍</button>
+            </div>
+            <div id="startSuggestions" class="suggestions"></div>
+        </div>
 
 
         <label for="stop">
             Tappa (facoltativa)
         </label>
-<div class="autocomplete">
 
-<div class="location-row">
-    <input
-        type="text"
-        id="stop"
-        placeholder="Tappa intermedia (facoltativa)"
-        autocomplete="off"
-    />
-    <button
-        id="selectStopOnMap"
-        type="button"
-        class="map-select-btn"
-        title="Seleziona dalla mappa"
-    >📍</button>
-</div>
-<div id="stopSuggestions" class="suggestions"></div>
-
+        <div class="autocomplete">
+            <div class="location-row">
+                <input
+                    type="text"
+                    id="stop"
+                    placeholder="Tappa intermedia (facoltativa)"
+                    autocomplete="off">
+                <button
+                    id="selectStopOnMap"
+                    type="button"
+                    class="map-select-btn"
+                    title="Seleziona dalla mappa">📍</button>
+            </div>
+            <div id="stopSuggestions" class="suggestions"></div>
+        </div>
 
 
         <label for="end">
@@ -99,28 +92,20 @@
         </label>
 
         <div class="autocomplete">
-
-<div class="autocomplete">
-
-<div class="location-row">
-    <input
-        type="text"
-        id="end"
-        placeholder="Destinazione"
-        autocomplete="off"
-    />
-    <button
-        id="selectEndOnMap"
-        type="button"
-        class="map-select-btn"
-        title="Seleziona dalla mappa"
-    >📍</button>
-</div>
-<div id="endSuggestions" class="suggestions"></div>
-    
-
-</div>
-
+            <div class="location-row">
+                <input
+                    type="text"
+                    id="end"
+                    placeholder="Destinazione"
+                    autocomplete="off">
+                <button
+                    id="selectEndOnMap"
+                    type="button"
+                    class="map-select-btn"
+                    title="Seleziona dalla mappa">📍</button>
+            </div>
+            <div id="endSuggestions" class="suggestions"></div>
+        </div>
 
 
         <label for="camperSpeedFactor">
@@ -175,6 +160,8 @@
     </section>
 
 
+
+    <div id="mapSelectionHint" class="map-hint" style="display:none;"></div>
 
     <div id="map"></div>
 
