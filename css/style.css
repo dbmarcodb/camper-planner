@@ -262,3 +262,24 @@ button {
     background: #eeeeee;
 
 }
+
+.map-select-btn{
+    margin-left:6px;
+    width:34px;
+    height:34px;
+    cursor:pointer;
+    border-radius:6px;
+    border:1px solid #bbb;
+    background:#fff;
+    transition:.2s;
+}
+
+.map-select-btn:hover{
+    background:#eef6ff;
+}
+
+.map-select-btn.active{
+    background:#2d7ff9;
+    color:#fff;
+    border-color:#2d7ff9;
+}
