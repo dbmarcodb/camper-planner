@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         button.disabled = true;
 
-        button.innerText = "CALCOLO...";
+        button.innerHTML = '<span class="btn-spinner"></span> CALCOLO...';
 
 
 
@@ -92,33 +92,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let waypointStop = null;
 
+            const camperProfile = loadCamperProfile();
+
 
 
             if (stopText.trim() !== "") {
 
-
                 waypointStop =
                 await geocode(stopText);
 
-
-                route =
-                await getRouteWithWaypoint(
-                    start,
-                    waypointStop,
-                    end
-                );
-
-
-            } else {
-
-
-                route =
-                await getRoute(
-                    start,
-                    end
-                );
-
             }
+
+
+            route =
+            await computeRoute(
+                start,
+                waypointStop,
+                end,
+                camperProfile
+            );
 
 
 
@@ -297,118 +289,75 @@ Math.round(
             .getElementById("results")
             .innerHTML = `
 
+            <div class="results-content">
 
-            <div>
+            <div class="results-hero">
 
-            Distanza
+                <div class="results-hero-label">
+                    Alle ore ${stopTime} sarai a
+                </div>
 
-            <br>
+                <div class="stop-location">
+                    ${stopTextResult}
+                </div>
 
-            <b>
-            ${(route.distance/1000).toFixed(0)}
-            km
-            </b>
+                ${camperProfile ? '<div class="results-badge">🚐 Percorso calcolato in base alle dimensioni impostate</div>' : ""}
 
+            </div>
 
-            <br><br>
+            <div class="results-grid">
 
+                <div class="result-card">
+                    <div class="result-icon">📏</div>
+                    <div class="result-label">Distanza totale</div>
+                    <div class="result-value">${(route.distance/1000).toFixed(0)} km</div>
+                </div>
 
-            <b>
-            Tempo in camper
-            </b>
+                <div class="result-card">
+                    <div class="result-icon">⏱️</div>
+                    <div class="result-label">Tempo in camper</div>
+                    <div class="result-value">${camperHours}h ${camperMinutes}m</div>
+                </div>
 
-            <br>
+                <div class="result-card">
+                    <div class="result-icon">🚗</div>
+                    <div class="result-label">Tempo con un'auto</div>
+                    <div class="result-value">${standardHours}h ${standardMinutes}m</div>
+                </div>
 
-            <b>
-            ${camperHours} ore
-            ${camperMinutes} minuti
-            </b>
+                <div class="result-card">
+                    <div class="result-icon">🛣️</div>
+                    <div class="result-label">Km alla sosta</div>
+                    <div class="result-value">${travelledKm.toFixed(0)} km</div>
+                </div>
 
+                <div class="result-card">
+                    <div class="result-icon">🕓</div>
+                    <div class="result-label">Guida alla sosta</div>
+                    <div class="result-value">${stopDrivingHours}h ${stopDrivingMinutes}m</div>
+                </div>
 
-            <br><br>
+                <div class="result-card">
+                    <div class="result-icon">📍</div>
+                    <div class="result-label">Km rimanenti</div>
+                    <div class="result-value">${remainingKm.toFixed(0)} km</div>
+                </div>
 
+                <div class="result-card">
+                    <div class="result-icon">🐢</div>
+                    <div class="result-label">Velocità camper</div>
+                    <div class="result-value">${speedValue || 100}%</div>
+                </div>
 
-            A velocità di crociera con un'auto standard si impiegherebbero:
+                <div class="result-card">
+                    <div class="result-icon">🧭</div>
+                    <div class="result-label">Coordinate sosta</div>
+                    <div class="result-value">${stopCoordinates}</div>
+                </div>
 
-            <br>
+            </div>
 
-            ${standardHours} ore
-            ${standardMinutes} minuti
-
-
-            <br><br><br>
-
-
-            <b>
-            Alle ore ${stopTime} sarai a
-            </b>
-
-
-            <br>
-
-
-            <span class="stop-location">
-
-            ${stopTextResult}
-
-            </span>
-
-
-            <br><br>
-
-
-           <b>
-
-Km percorsi
-
-</b>
-
-<br>
-
-${travelledKm.toFixed(0)} km
-
-<br><br>
-
-<b>
-
-Tempo di guida
-
-</b>
-
-<br>
-
-${stopDrivingHours} ore
-${stopDrivingMinutes} minuti
-
-<br><br>
-
-Coordinate
-
-<br>
-
-${stopCoordinates}
-
-<br><br>
-
-<b>
-
-Km rimanenti
-
-</b>
-
-<br>
-
-${remainingKm.toFixed(0)} km
-
-<br><br>
-
-Velocità camper:
-
-${speedValue || 100}%
-
-<br><br>
-
-<button
+            <button
             class="copy-button"
             onclick="copyStopLocation()">
 
@@ -416,9 +365,7 @@ ${speedValue || 100}%
 
             </button>
 
-
             </div>
-
 
             `;
 

@@ -77,3 +77,63 @@ function clearSavedData() {
     });
 
 }
+
+
+
+// --- Profilo dimensioni camper ---
+// Salvato con chiavi separate da quelle del viaggio: NON viene mai
+// toccato da clearSavedData() né dal pulsante "Nuovo viaggio".
+
+const CAMPER_PROFILE_KEY = "camperProfile";
+
+
+
+function saveCamperProfile(profile) {
+
+    localStorage.setItem(
+        CAMPER_PROFILE_KEY,
+        JSON.stringify(profile)
+    );
+
+}
+
+
+
+function loadCamperProfile() {
+
+    const raw = localStorage.getItem(CAMPER_PROFILE_KEY);
+
+    if (!raw) {
+        return null;
+    }
+
+    try {
+
+        const profile = JSON.parse(raw);
+
+        const hasDimensions =
+            (profile.height && profile.height > 0) ||
+            (profile.width && profile.width > 0) ||
+            (profile.length && profile.length > 0);
+
+        if (!hasDimensions) {
+            return null;
+        }
+
+        return profile;
+
+    } catch (error) {
+
+        return null;
+
+    }
+
+}
+
+
+
+function deleteCamperProfile() {
+
+    localStorage.removeItem(CAMPER_PROFILE_KEY);
+
+}

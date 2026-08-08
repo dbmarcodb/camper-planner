@@ -498,8 +498,152 @@ function distanceBetweenPoints(
 
 
 
-function timeToMinutes(time) {
+// Chiave API gratuita di OpenRouteService (piano Standard)
+// Usata solo quando sono impostate le dimensioni del camper,
+// per calcolare un percorso realmente adatto al veicolo.
+const ORS_API_KEY =
+    "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImRiNWU4YzYzNDQ3ZjRmMjRhY2U4MjRiZDQzZDExMjc5IiwiaCI6Im11cm11cjY0In0=";
 
+
+
+async function getRouteORS(start, waypoint, end, camperProfile) {
+
+
+    const coordinates = [
+        [start.lon, start.lat]
+    ];
+
+    if (waypoint) {
+        coordinates.push([waypoint.lon, waypoint.lat]);
+    }
+
+    coordinates.push([end.lon, end.lat]);
+
+
+
+    const restrictions = {};
+
+    if (camperProfile.height && camperProfile.height > 0) {
+        restrictions.height = camperProfile.height;
+    }
+
+    if (camperProfile.width && camperProfile.width > 0) {
+        restrictions.width = camperProfile.width;
+    }
+
+    if (camperProfile.length && camperProfile.length > 0) {
+        restrictions.length = camperProfile.length;
+    }
+
+
+
+    const avoidFeatures = [];
+
+    if (camperProfile.avoidHighways) {
+        avoidFeatures.push("highways");
+    }
+
+    if (camperProfile.avoidTolls) {
+        avoidFeatures.push("tollways");
+    }
+
+    if (camperProfile.avoidFerries) {
+        avoidFeatures.push("ferries");
+    }
+
+
+
+    const options = {
+        profile_params: {
+            restrictions: restrictions
+        }
+    };
+
+    if (avoidFeatures.length > 0) {
+        options.avoid_features = avoidFeatures;
+    }
+
+
+
+    const body = {
+        coordinates: coordinates,
+        options: options
+    };
+
+
+    const response = await fetch(
+        "https://api.openrouteservice.org/v2/directions/driving-hgv/geojson",
+        {
+            method: "POST",
+            headers: {
+                "Authorization": ORS_API_KEY,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        }
+    );
+
+
+    if (!response.ok) {
+
+        const errorText = await response.text();
+
+        throw new Error(
+            "OpenRouteService: percorso non trovato con queste dimensioni (" +
+            response.status +
+            "). " +
+            errorText
+        );
+
+    }
+
+
+    const data = await response.json();
+
+    if (!data.features || !data.features.length) {
+
+        throw new Error(
+            "OpenRouteService: percorso non trovato con queste dimensioni"
+        );
+
+    }
+
+
+    const feature = data.features[0];
+
+
+    return {
+
+        distance: feature.properties.summary.distance,
+
+        duration: feature.properties.summary.duration,
+
+        geometry: {
+            coordinates: feature.geometry.coordinates
+        }
+
+    };
+
+}
+
+
+
+async function computeRoute(start, waypoint, end, camperProfile) {
+
+    if (camperProfile) {
+        return await getRouteORS(start, waypoint, end, camperProfile);
+    }
+
+    if (waypoint) {
+        return await getRouteWithWaypoint(start, waypoint, end);
+    }
+
+    return await getRoute(start, end);
+
+}
+
+
+function timeToMinutes(time) {
 
     const parts =
         time.split(":");
