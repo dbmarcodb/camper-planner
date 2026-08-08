@@ -1,17 +1,49 @@
-/* 
+/*
 La sosta al punto giusto
-Versione 0.3
+Versione 1.6.1b — tema "Natura/Viaggio"
 */
+
+:root {
+
+    --color-primary: #52796f;
+    --color-primary-dark: #3a5a52;
+    --color-primary-light: #84a98c;
+    --color-sky: #6ec6ff;
+    --color-sky-dark: #3e8ed0;
+    --color-accent: #e07a5f;
+
+    --color-bg: #f4f1ea;
+    --color-card-bg: #ffffff;
+    --color-text: #2f3e35;
+    --color-text-light: #6b7d74;
+    --color-border: #d8ddd6;
+
+    --shadow-card: 0 2px 10px rgba(47, 62, 53, 0.08);
+    --shadow-card-hover: 0 4px 16px rgba(47, 62, 53, 0.12);
+
+    --radius: 14px;
+
+}
+
+
+
+* {
+    box-sizing: border-box;
+}
+
+
 
 body {
 
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 
     margin: 0;
 
     padding: 0;
 
-    background: #f5f5f5;
+    background: var(--color-bg);
+
+    color: var(--color-text);
 
 }
 
@@ -19,7 +51,7 @@ body {
 
 .container {
 
-    max-width: 900px;
+    max-width: 1200px;
 
     margin: auto;
 
@@ -35,13 +67,27 @@ header {
 
     margin-bottom: 25px;
 
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-sky-dark) 100%);
+
+    color: #fff;
+
+    padding: 28px 20px;
+
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow-card);
+
 }
 
 
 
 header h1 {
 
-    margin-bottom: 8px;
+    margin: 0 0 8px 0;
+
+    font-size: 26px;
+
+    font-weight: 700;
 
 }
 
@@ -53,13 +99,75 @@ header p {
 
     font-style: italic;
 
+    opacity: 0.95;
+
 }
 
 
 
 header small {
 
-    color: #666;
+    opacity: 0.8;
+
+}
+
+
+
+/* Layout a due colonne su schermi larghi (PC, iPad orizzontale) */
+
+.layout-columns {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 20px;
+
+}
+
+
+
+.panel-column, .map-column {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 20px;
+
+    min-width: 0;
+
+}
+
+
+
+@media (min-width: 900px) {
+
+    .layout-columns {
+
+        flex-direction: row;
+
+        align-items: flex-start;
+
+    }
+
+    .panel-column {
+
+        flex: 1;
+
+        max-width: 460px;
+
+    }
+
+    .map-column {
+
+        flex: 1.4;
+
+        position: sticky;
+
+        top: 20px;
+
+    }
 
 }
 
@@ -67,11 +175,13 @@ header small {
 
 .input-area {
 
-    background: white;
+    background: var(--color-card-bg);
 
     padding: 20px;
 
-    border-radius: 12px;
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow-card);
 
 }
 
@@ -85,7 +195,11 @@ label {
 
     margin-bottom: 5px;
 
-    font-weight: bold;
+    font-weight: 600;
+
+    font-size: 14px;
+
+    color: var(--color-primary-dark);
 
 }
 
@@ -101,9 +215,27 @@ input {
 
     font-size: 16px;
 
-    border: 1px solid #bbb;
+    font-family: inherit;
 
-    border-radius: 6px;
+    border: 1px solid var(--color-border);
+
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: var(--color-text);
+
+}
+
+
+
+input:focus {
+
+    outline: none;
+
+    border-color: var(--color-sky-dark);
+
+    box-shadow: 0 0 0 3px rgba(62, 142, 208, 0.15);
 
 }
 
@@ -115,17 +247,103 @@ button {
 
     margin-top: 25px;
 
-    padding: 14px;
+    min-height: 46px;
+
+    padding: 12px 14px;
 
     font-size: 16px;
 
-    font-weight: bold;
+    font-family: inherit;
+
+    font-weight: 600;
 
     cursor: pointer;
 
     border: none;
 
-    border-radius: 8px;
+    border-radius: 10px;
+
+    background: var(--color-primary);
+
+    color: #fff;
+
+    transition: background .2s, transform .1s;
+
+}
+
+
+
+button:hover {
+
+    background: var(--color-primary-dark);
+
+}
+
+
+
+button:active {
+
+    transform: scale(0.98);
+
+}
+
+
+
+button:disabled {
+
+    opacity: 0.7;
+
+    cursor: default;
+
+    transform: none;
+
+}
+
+
+
+#routeButton {
+
+    background: var(--color-accent);
+
+}
+
+
+
+#routeButton:hover {
+
+    background: #c9613f;
+
+}
+
+
+
+.btn-spinner {
+
+    display: inline-block;
+
+    width: 14px;
+
+    height: 14px;
+
+    border: 2px solid rgba(255,255,255,0.5);
+
+    border-top-color: #fff;
+
+    border-radius: 50%;
+
+    animation: spin 0.7s linear infinite;
+
+    margin-right: 6px;
+
+    vertical-align: middle;
+
+}
+
+
+
+@keyframes spin {
+
+    to { transform: rotate(360deg); }
 
 }
 
@@ -133,15 +351,180 @@ button {
 
 #results {
 
-    background: white;
-
-    margin-top: 20px;
+    background: var(--color-card-bg);
 
     padding: 20px;
 
-    border-radius: 12px;
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow-card);
 
     line-height: 1.6;
+
+}
+
+
+
+#results:empty {
+
+    display: none;
+
+}
+
+
+
+.results-content {
+
+    animation: fade-in 0.35s ease;
+
+}
+
+
+
+@keyframes fade-in {
+
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+
+}
+
+
+
+.results-hero {
+
+    text-align: center;
+
+    padding-bottom: 16px;
+
+    margin-bottom: 16px;
+
+    border-bottom: 1px solid var(--color-border);
+
+}
+
+
+
+.results-hero-label {
+
+    font-size: 14px;
+
+    color: var(--color-text-light);
+
+    font-weight: 600;
+
+}
+
+
+
+.stop-location {
+
+    display: block;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    color: var(--color-primary-dark);
+
+    margin-top: 4px;
+
+}
+
+
+
+.results-badge {
+
+    display: inline-block;
+
+    margin-top: 10px;
+
+    background: #e6f4ea;
+
+    color: var(--color-primary-dark);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    padding: 6px 12px;
+
+    border-radius: 20px;
+
+}
+
+
+
+.results-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 12px;
+
+}
+
+
+
+@media (min-width: 480px) {
+
+    .results-grid {
+
+        grid-template-columns: repeat(2, 1fr);
+
+    }
+
+}
+
+
+
+.result-card {
+
+    background: var(--color-bg);
+
+    border-radius: 10px;
+
+    padding: 12px;
+
+    text-align: center;
+
+}
+
+
+
+.result-icon {
+
+    font-size: 22px;
+
+}
+
+
+
+.result-label {
+
+    font-size: 12px;
+
+    color: var(--color-text-light);
+
+    margin-top: 4px;
+
+    font-weight: 600;
+
+}
+
+
+
+.result-value {
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    color: var(--color-text);
+
+    margin-top: 2px;
+
+    word-break: break-word;
 
 }
 
@@ -153,9 +536,9 @@ button {
 
     height: 500px;
 
-    margin-top: 20px;
+    border-radius: var(--radius);
 
-    border-radius: 12px;
+    box-shadow: var(--shadow-card);
 
 }
 
@@ -169,19 +552,19 @@ button {
 
 
 
-.stop-location {
+.copy-button {
 
-    font-size: 20px;
+    margin-top: 15px;
 
-    font-weight: bold;
+    background: var(--color-sky-dark);
 
 }
 
 
 
-.copy-button {
+.copy-button:hover {
 
-    margin-top: 15px;
+    background: #326fa8;
 
 }
 
@@ -189,13 +572,11 @@ button {
 
 @media (max-width: 600px) {
 
-
     .container {
 
         padding: 10px;
 
     }
-
 
     #map {
 
@@ -203,8 +584,21 @@ button {
 
     }
 
+    header {
+
+        padding: 20px 14px;
+
+    }
+
+    header h1 {
+
+        font-size: 21px;
+
+    }
 
 }
+
+
 
 .autocomplete {
 
@@ -226,11 +620,17 @@ button {
 
     background: white;
 
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border);
 
     border-top: none;
 
+    border-radius: 0 0 8px 8px;
+
+    box-shadow: var(--shadow-card);
+
     z-index: 1000;
+
+    overflow: hidden;
 
 }
 
@@ -250,9 +650,10 @@ button {
 
 .suggestions div:hover {
 
-    background: #eeeeee;
+    background: var(--color-bg);
 
 }
+
 
 
 #clearButton {
@@ -261,7 +662,19 @@ button {
 
     background: #eeeeee;
 
+    color: var(--color-text);
+
 }
+
+
+
+#clearButton:hover {
+
+    background: #e2e2e2;
+
+}
+
+
 
 .location-row {
     display: flex;
@@ -277,8 +690,8 @@ button {
 .map-select-btn{
     margin-top:0;
     margin-left:0;
-    width:42px;
-    height:42px;
+    width:44px;
+    height:44px;
     padding:0;
     box-sizing:border-box;
     display:flex;
@@ -287,8 +700,8 @@ button {
     font-size:18px;
     flex-shrink:0;
     cursor:pointer;
-    border-radius:6px;
-    border:1px solid #bbb;
+    border-radius:8px;
+    border:1px solid var(--color-border);
     background:#fff;
     transition:.2s;
 }
@@ -298,25 +711,146 @@ button {
 }
 
 .map-select-btn.selecting{
-    background:#2d7ff9;
+    background: var(--color-sky-dark);
     color:#fff;
-    border-color:#2d7ff9;
+    border-color: var(--color-sky-dark);
     animation: pulse-select 1s infinite;
 }
 
 @keyframes pulse-select {
-    0%   { box-shadow: 0 0 0 0 rgba(45,127,249,0.5); }
-    70%  { box-shadow: 0 0 0 8px rgba(45,127,249,0); }
-    100% { box-shadow: 0 0 0 0 rgba(45,127,249,0); }
+    0%   { box-shadow: 0 0 0 0 rgba(62,142,208,0.5); }
+    70%  { box-shadow: 0 0 0 8px rgba(62,142,208,0); }
+    100% { box-shadow: 0 0 0 0 rgba(62,142,208,0); }
 }
 
 .map-hint{
-    background:#2d7ff9;
+    background: var(--color-sky-dark);
     color:#fff;
     padding:10px 14px;
     border-radius:8px;
-    margin-top:16px;
     font-size:14px;
     text-align:center;
     font-weight:bold;
+}
+
+.camper-profile-btn{
+    margin-top:20px;
+    background:#f5f5f2;
+    color: var(--color-text);
+    border:1px solid var(--color-border);
+    font-size:15px;
+    text-align:center;
+    font-weight:600;
+}
+
+.camper-profile-btn:hover{
+    background:#ececea;
+}
+
+.camper-profile-btn.camper-profile-set{
+    background:#e6f4ea;
+    border-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
+}
+
+.camper-profile-panel{
+    margin-top:10px;
+    padding:16px;
+    background:var(--color-bg);
+    border:1px solid var(--color-border);
+    border-radius:10px;
+}
+
+.camper-profile-panel input[type="number"]{
+    width:100%;
+    box-sizing:border-box;
+    padding:10px;
+    font-size:16px;
+    border:1px solid var(--color-border);
+    border-radius:8px;
+}
+
+.camper-checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:12px;
+}
+
+.camper-checkbox-row input{
+    width:auto;
+    min-height:20px;
+}
+
+.camper-checkbox-row label{
+    margin:0;
+    font-weight:normal;
+}
+
+.camper-profile-actions{
+    display:flex;
+    gap:8px;
+    margin-top:18px;
+    flex-wrap: wrap;
+}
+
+.camper-profile-actions button{
+    width:auto;
+    flex:1;
+    min-width: 120px;
+    margin-top:0;
+    padding:12px;
+    font-size:14px;
+}
+
+#camperProfileSave, #camperDisclaimerAccept{
+    background: var(--color-sky-dark);
+    color:#fff;
+}
+
+#camperProfileSave:hover, #camperDisclaimerAccept:hover{
+    background:#326fa8;
+}
+
+#camperProfileCancel, #camperDisclaimerCancel{
+    background:#eeeeee;
+    color: var(--color-text);
+}
+
+#camperProfileReset{
+    background:#fdeaea;
+    color:#a33;
+}
+
+.modal-overlay{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:rgba(47, 62, 53, 0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:2000;
+}
+
+.modal-box{
+    background:#fff;
+    border-radius:var(--radius);
+    padding:24px;
+    max-width:440px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-box h3{
+    margin-top:0;
+    color: var(--color-accent);
+}
+
+.modal-box p{
+    font-size:14px;
+    line-height:1.5;
+    color:#333;
 }
