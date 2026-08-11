@@ -527,15 +527,15 @@ function stopMapSelection(){
 
 function selectionIconFor(field){
 
-    if(field === "start"){
+    if(field === "start" || field.endsWith("-start")){
         return "🟢";
     }
 
-    if(field === "stop"){
+    if(field === "stop" || field.endsWith("-stop")){
         return "🚩";
     }
 
-    if(field === "end"){
+    if(field === "end" || field.endsWith("-end")){
         return "🔵";
     }
 
@@ -605,5 +605,52 @@ function addWaypointMarker(lat, lon, text){
 
 
     markers.push(marker);
+
+}
+
+
+
+// --- Funzioni generiche per l'itinerario multi-tratta ---
+
+function addColoredPolyline(coordinates, color){
+
+    const latlngs = coordinates.map(function(point){
+        return [point[1], point[0]];
+    });
+
+    const line = L.polyline(latlngs, {
+        color: color,
+        weight: 5,
+        opacity: 0.85
+    }).addTo(map);
+
+    markers.push(line);
+
+    return line;
+
+}
+
+
+
+function addLegMarker(lat, lon, text, color){
+
+    const icon = L.divIcon({
+
+        className: "leg-marker",
+
+        html: `<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.4);"></div>`
+
+    });
+
+    const marker = L.marker(
+        [lat, lon],
+        { icon: icon }
+    )
+    .addTo(map)
+    .bindPopup(text);
+
+    markers.push(marker);
+
+    return marker;
 
 }

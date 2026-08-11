@@ -124,8 +124,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+            // Se il percorso arriva da OpenRouteService (dimensioni camper
+            // impostate), il tempo è già calcolato per un mezzo pesante:
+            // non va corretto una seconda volta con il cursore velocità.
             const camperDuration =
-            route.duration / camperFactor;
+            camperProfile
+            ? route.duration
+            : route.duration / camperFactor;
 
 
 
@@ -346,7 +351,7 @@ Math.round(
                 <div class="result-card">
                     <div class="result-icon">🐢</div>
                     <div class="result-label">Velocità camper</div>
-                    <div class="result-value">${speedValue || 100}%</div>
+                    <div class="result-value">${camperProfile ? "già nel calcolo ORS" : (speedValue || 100) + "%"}</div>
                 </div>
 
                 <div class="result-card">
@@ -375,12 +380,13 @@ Math.round(
 
         catch(error) {
 
-
-            alert(
-                "Errore: "
-                + error.message
-            );
-
+            document
+            .getElementById("results")
+            .innerHTML = `
+                <div class="error-banner">
+                    ⚠️ ${error.message}
+                </div>
+            `;
 
         }
 

@@ -586,14 +586,35 @@ async function getRouteORS(start, waypoint, end, camperProfile) {
 
     if (!response.ok) {
 
-        const errorText = await response.text();
+        let message;
 
-        throw new Error(
-            "OpenRouteService: percorso non trovato con queste dimensioni (" +
-            response.status +
-            "). " +
-            errorText
-        );
+        if (response.status === 429) {
+
+            message =
+                "Hai raggiunto il limite giornaliero di calcoli con " +
+                "dimensioni del camper (OpenRouteService). Riprova domani, " +
+                "oppure rimuovi temporaneamente le dimensioni per un " +
+                "calcolo standard.";
+
+        } else if (response.status === 401 || response.status === 403) {
+
+            message =
+                "La chiave API di OpenRouteService non è valida o non è " +
+                "autorizzata per questo tipo di calcolo.";
+
+        } else {
+
+            message =
+                "Nessun percorso trovato compatibile con le dimensioni " +
+                "inserite. Provare a modificarle o a rimuoverle.";
+
+        }
+
+        const error = new Error(message);
+
+        error.orsStatus = response.status;
+
+        throw error;
 
     }
 
@@ -602,9 +623,13 @@ async function getRouteORS(start, waypoint, end, camperProfile) {
 
     if (!data.features || !data.features.length) {
 
-        throw new Error(
-            "OpenRouteService: percorso non trovato con queste dimensioni"
+        const error = new Error(
+            "Nessun percorso trovato compatibile con le dimensioni inserite."
         );
+
+        error.orsStatus = "no-route";
+
+        throw error;
 
     }
 
