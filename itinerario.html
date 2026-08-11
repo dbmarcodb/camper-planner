@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#52796f">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🗺️%3C/text%3E%3C/svg%3E">
+
+    <title>Itinerario completo</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <header>
+
+        <h1>🗺️ Itinerario completo</h1>
+
+        <p>
+            Pianifica l'intero viaggio, tratta dopo tratta
+        </p>
+
+        <small>
+            <a href="index.html" class="back-link">← Torna al calcolo della sosta</a>
+        </small>
+
+    </header>
+
+
+    <div class="layout-columns">
+
+    <div class="panel-column">
+
+        <section class="input-area">
+
+            <label for="itinerarySpeed">
+                Velocità del camper rispetto a un'auto (%)
+            </label>
+
+            <input id="itinerarySpeed" type="number" min="50" max="110" value="85">
+
+            <div id="camperProfileNote" class="camper-note"></div>
+
+            <div id="legsList"></div>
+
+            <button id="addLegButton" type="button" class="secondary-btn">
+                + Aggiungi tratta
+            </button>
+
+            <button id="calculateItineraryButton" type="button">
+                CALCOLA ITINERARIO
+            </button>
+
+            <div id="exportButtons" class="camper-profile-actions" style="display:none;">
+                <button id="exportCsvButton" type="button">⬇️ Esporta CSV</button>
+                <button id="exportPdfButton" type="button">⬇️ Esporta PDF</button>
+            </div>
+
+        </section>
+
+        <section id="itineraryResults"></section>
+
+    </div>
+
+    <div class="map-column">
+
+        <div id="mapSelectionHint" class="map-hint" style="display:none;"></div>
+
+        <div id="map"></div>
+
+    </div>
+
+    </div>
+
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<script src="js/map.js"></script>
+<script src="js/routing.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/autocomplete.js"></script>
+
+<script src="js/itinerary.js"></script>
+
+</body>
+
+</html>
