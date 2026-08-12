@@ -910,15 +910,17 @@ button:disabled {
 
 .back-link{
 
-    color: var(--color-text-light);
+    color: #ffffff;
 
-    text-decoration:none;
+    text-decoration: underline;
+
+    opacity: 0.9;
 
 }
 
 .back-link:hover{
 
-    text-decoration:underline;
+    opacity: 1;
 
 }
 
@@ -1127,5 +1129,127 @@ button:disabled {
         grid-template-columns:1fr;
 
     }
+
+}
+
+.summary-title{
+
+    margin-top:20px;
+
+    margin-bottom:8px;
+
+    font-size:15px;
+
+    color: var(--color-primary-dark);
+
+}
+
+.summary-table{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+
+}
+
+.summary-row{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    background:var(--color-card-bg);
+
+    border:1px solid var(--color-border);
+
+    border-radius:8px;
+
+    padding:10px 12px;
+
+    cursor:pointer;
+
+    transition:background .15s;
+
+}
+
+.summary-row:hover{
+
+    background:var(--color-bg);
+
+}
+
+.summary-cell{
+
+    font-size:13px;
+
+}
+
+.summary-day{
+
+    font-weight:700;
+
+    color: var(--color-primary-dark);
+
+    min-width:28px;
+
+}
+
+.summary-place{
+
+    flex:1;
+
+    font-weight:600;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+
+}
+
+.summary-time{
+
+    color: var(--color-text-light);
+
+    min-width:70px;
+
+    text-align:right;
+
+}
+
+.copy-coord-btn{
+
+    width:auto;
+
+    margin-top:0;
+
+    min-height:32px;
+
+    padding:6px 10px;
+
+    font-size:14px;
+
+    background:#eef2ef;
+
+    color: var(--color-primary-dark);
+
+    flex-shrink:0;
+
+}
+
+#mapDownloadButtons{
+
+    margin-top:14px;
+
+}
+
+#mapDownloadButtons button{
+
+    font-size:13px;
 
 }
