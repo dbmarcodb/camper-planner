@@ -124,13 +124,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-            // Se il percorso arriva da OpenRouteService (dimensioni camper
-            // impostate), il tempo è già calcolato per un mezzo pesante:
-            // non va corretto una seconda volta con il cursore velocità.
+            // route.duration è sempre calcolato ad andatura auto
+            // (anche quando il tracciato arriva da OpenRouteService per
+            // rispettare le dimensioni): il fattore velocità si applica
+            // sempre allo stesso modo.
             const camperDuration =
-            camperProfile
-            ? route.duration
-            : route.duration / camperFactor;
+            route.duration / camperFactor;
 
 
 
@@ -351,7 +350,7 @@ Math.round(
                 <div class="result-card">
                     <div class="result-icon">🐢</div>
                     <div class="result-label">Velocità camper</div>
-                    <div class="result-value">${camperProfile ? "già nel calcolo ORS" : (speedValue || 100) + "%"}</div>
+                    <div class="result-value">${speedValue || 100}%</div>
                 </div>
 
                 <div class="result-card">

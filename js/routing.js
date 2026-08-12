@@ -656,7 +656,32 @@ async function getRouteORS(start, waypoint, end, camperProfile) {
 async function computeRoute(start, waypoint, end, camperProfile) {
 
     if (camperProfile) {
-        return await getRouteORS(start, waypoint, end, camperProfile);
+
+        const orsRoute =
+        await getRouteORS(start, waypoint, end, camperProfile);
+
+        // Il tracciato/distanza resta quello di OpenRouteService (rispetta
+        // le dimensioni), ma il TEMPO lo calcoliamo separatamente ad
+        // andatura da automobile (OSRM), non da mezzo pesante: il profilo
+        // "driving-hgv" di ORS assume una velocità troppo lenta e
+        // allungherebbe troppo i tempi. La correzione via percentuale
+        // resta così una scelta manuale dell'utente, applicata sul tempo
+        // "auto".
+        const carRoute =
+        waypoint
+        ? await getRouteWithWaypoint(start, waypoint, end)
+        : await getRoute(start, end);
+
+        return {
+
+            distance: orsRoute.distance,
+
+            duration: carRoute.duration,
+
+            geometry: orsRoute.geometry
+
+        };
+
     }
 
     if (waypoint) {

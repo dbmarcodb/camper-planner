@@ -48,7 +48,9 @@ function initMap(){
         {
 
             attribution:
-            "&copy; OpenStreetMap contributors"
+            "&copy; OpenStreetMap contributors",
+
+            crossOrigin: true
 
         }
 

@@ -81,23 +81,98 @@ function createLeg() {
 
 
 
-function addLeg() {
+async function addLeg() {
 
-    const leg = createLeg();
+    // Prima "fotografo" quanto scritto nelle tratte esistenti, altrimenti
+    // ridisegnando la lista si perderebbero i dati non ancora calcolati.
+    readLegsFromForm();
 
-    legs.push(leg);
+    const previousLeg = legs[legs.length - 1];
+
+    const newLeg = createLeg();
+
+    if (previousLeg && previousLeg.endText.trim() !== "") {
+        newLeg.startText = previousLeg.endText;
+    }
+
+    legs.push(newLeg);
 
     renderLegs();
 
     document
-        .getElementById(leg.id + "-start")
+        .getElementById(newLeg.id + "-start")
         .scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // Calcolo parziale della tratta precedente, per suggerire l'orario
+    // di partenza della nuova tratta (partenza precedente + tempo di
+    // percorrenza + eventuale sosta). Se manca qualcosa, la tratta resta
+    // comunque aggiunta senza precompilazione.
+    if (
+        previousLeg &&
+        previousLeg.startText.trim() !== "" &&
+        previousLeg.endText.trim() !== "" &&
+        previousLeg.departureTime
+    ) {
+
+        try {
+
+            const camperProfile = loadCamperProfile();
+
+            const speedValue = document.getElementById("itinerarySpeed").value;
+
+            const camperFactor = speedValue === "" ? 1 : Number(speedValue) / 100;
+
+            const start = await geocode(previousLeg.startText);
+            const end = await geocode(previousLeg.endText);
+
+            let waypoint = null;
+
+            if (previousLeg.stopText.trim() !== "") {
+                waypoint = await geocode(previousLeg.stopText);
+            }
+
+            const route = await computeRoute(start, waypoint, end, camperProfile);
+
+            const durationMin = (route.duration / camperFactor) / 60;
+
+            previousLeg.distanceKm = (route.distance / 1000).toFixed(0);
+            previousLeg.durationMin =
+                Math.floor(durationMin / 60) + "h " +
+                Math.round(durationMin % 60) + "m";
+
+            const [dh, dm] = previousLeg.departureTime.split(":").map(Number);
+
+            const departureTotal = dh * 60 + dm;
+
+            const arrivalTotal = departureTotal + durationMin;
+
+            previousLeg.arrivalTime = minutesToTime(arrivalTotal);
+            previousLeg.arrivalNextDay = arrivalTotal >= 1440;
+
+            const stopMinutes = Number(previousLeg.stopDuration) || 0;
+
+            newLeg.departureTime = minutesToTime(arrivalTotal + stopMinutes);
+
+            if (arrivalTotal >= 1440) {
+                newLeg.day = previousLeg.day + 1;
+            }
+
+            renderLegs();
+
+        } catch (error) {
+            // Località non trovata o rete assente: nessuna precompilazione,
+            // ma la tratta resta comunque aggiunta.
+        }
+
+    }
 
 }
 
 
 
 function removeLeg(id) {
+
+    readLegsFromForm();
 
     legs = legs.filter(function (leg) {
         return leg.id !== id;
@@ -400,14 +475,23 @@ async function calculateItinerary() {
 
             const route = await computeRoute(start, waypoint, end, camperProfile);
 
-            const durationMin = camperProfile
-                ? route.duration / 60
-                : (route.duration / camperFactor) / 60;
+            // route.duration è sempre calcolato ad andatura auto (anche con
+            // dimensioni impostate, il tracciato viene da OpenRouteService
+            // ma il tempo da OSRM): il fattore velocità si applica sempre.
+            const durationMin = (route.duration / camperFactor) / 60;
 
             leg.distanceKm = (route.distance / 1000).toFixed(0);
             leg.durationMin =
                 Math.floor(durationMin / 60) + "h " +
                 Math.round(durationMin % 60) + "m";
+
+            leg.startLat = start.lat;
+            leg.startLon = start.lon;
+            leg.endLat = end.lat;
+            leg.endLon = end.lon;
+            leg.stopLat = waypoint ? waypoint.lat : null;
+            leg.stopLon = waypoint ? waypoint.lon : null;
+            leg.routeCoordinates = route.geometry.coordinates;
 
             // Orario di arrivo, a partire dall'orario di partenza inserito
             if (leg.departureTime) {
@@ -478,8 +562,10 @@ async function calculateItinerary() {
 
         renderLegs();
         renderSummary();
+        renderSummaryTable();
 
         document.getElementById("exportButtons").style.display = "flex";
+        document.getElementById("mapDownloadButtons").style.display = "flex";
 
     } catch (error) {
 
@@ -527,6 +613,273 @@ function renderSummary() {
             </div>
         </div>
     `;
+
+}
+
+
+
+function renderSummaryTable() {
+
+    const container = document.getElementById("itinerarySummaryTable");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    const legsWithArrival = legs.filter(function (leg) {
+        return leg.endLat != null;
+    });
+
+    if (legsWithArrival.length === 0) {
+        return;
+    }
+
+    const title = document.createElement("h3");
+    title.className = "summary-title";
+    title.textContent = "📋 Riepilogo tappe (clicca per centrare la mappa)";
+    container.appendChild(title);
+
+    const table = document.createElement("div");
+    table.className = "summary-table";
+
+    legsWithArrival.forEach(function (leg) {
+
+        const row = document.createElement("div");
+        row.className = "summary-row";
+
+        const dayCell = document.createElement("div");
+        dayCell.className = "summary-cell summary-day";
+        dayCell.textContent = "G" + leg.day;
+
+        const placeCell = document.createElement("div");
+        placeCell.className = "summary-cell summary-place";
+        placeCell.textContent = leg.endText;
+
+        const timeCell = document.createElement("div");
+        timeCell.className = "summary-cell summary-time";
+        timeCell.textContent = (leg.arrivalTime || "-") + (leg.arrivalNextDay ? " (+1g)" : "");
+
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "copy-coord-btn";
+        copyBtn.title = "Copia coordinate";
+        copyBtn.textContent = "📍";
+
+        copyBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            copyCoordinates(leg.endLat, leg.endLon, copyBtn);
+        });
+
+        row.addEventListener("click", function () {
+
+            focusPointOnMap(
+                leg.endLat,
+                leg.endLon,
+                leg.endText,
+                leg.arrivalTime,
+                leg.arrivalNextDay,
+                leg.date || ("Giorno " + leg.day)
+            );
+
+        });
+
+        row.appendChild(dayCell);
+        row.appendChild(placeCell);
+        row.appendChild(timeCell);
+        row.appendChild(copyBtn);
+
+        table.appendChild(row);
+
+    });
+
+    container.appendChild(table);
+
+}
+
+
+
+function focusPointOnMap(lat, lon, place, time, nextDay, date) {
+
+    document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "center" });
+
+    map.setView([lat, lon], 14);
+
+    const content =
+        "<b>🕐 " + (time || "?") + (nextDay ? " (+1g)" : "") + "</b><br>" +
+        "📍 " + place + "<br>" +
+        "📅 " + date;
+
+    L.popup().setLatLng([lat, lon]).setContent(content).openOn(map);
+
+}
+
+
+
+function copyCoordinates(lat, lon, button) {
+
+    const text = lat.toFixed(6) + ", " + lon.toFixed(6);
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+
+        navigator.clipboard.writeText(text).then(function () {
+            flashCopyFeedback(button);
+        }).catch(function () {
+            alert("Coordinate: " + text);
+        });
+
+    } else {
+
+        alert("Coordinate: " + text);
+
+    }
+
+}
+
+
+
+function flashCopyFeedback(button) {
+
+    const original = button.textContent;
+
+    button.textContent = "✅";
+
+    setTimeout(function () {
+        button.textContent = original;
+    }, 1500);
+
+}
+
+
+
+function downloadMapImage() {
+
+    leafletImage(map, function (err, canvas) {
+
+        if (err) {
+            alert("Non è stato possibile generare l'immagine della mappa. Riprova dopo che la mappa è completamente caricata.");
+            return;
+        }
+
+        const link = document.createElement("a");
+        link.download = "mappa-itinerario.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+    });
+
+}
+
+
+
+function escapeXml(text) {
+
+    return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+
+}
+
+
+
+function exportGPX() {
+
+    let trkpts = "";
+
+    legs.forEach(function (leg) {
+
+        if (leg.routeCoordinates) {
+
+            leg.routeCoordinates.forEach(function (point) {
+                trkpts += '<trkpt lat="' + point[1] + '" lon="' + point[0] + '"></trkpt>\n';
+            });
+
+        }
+
+    });
+
+    let wpts = "";
+
+    legs.forEach(function (leg) {
+
+        if (leg.endLat) {
+            wpts +=
+                '<wpt lat="' + leg.endLat + '" lon="' + leg.endLon + '">' +
+                '<name>' + escapeXml(leg.endText) + '</name>' +
+                '</wpt>\n';
+        }
+
+    });
+
+    const gpx =
+        '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<gpx version="1.1" creator="La sosta al punto giusto" xmlns="http://www.topografix.com/GPX/1/1">\n' +
+        '<trk><name>Itinerario camper</name><trkseg>\n' +
+        trkpts +
+        '</trkseg></trk>\n' +
+        wpts +
+        '</gpx>';
+
+    const blob = new Blob([gpx], { type: "application/gpx+xml" });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "itinerario-camper.gpx";
+    link.click();
+
+}
+
+
+
+function openInGoogleMaps() {
+
+    const points = [];
+
+    legs.forEach(function (leg) {
+
+        if (leg.startLat) {
+            points.push([leg.startLat, leg.startLon]);
+        }
+
+        if (leg.stopLat) {
+            points.push([leg.stopLat, leg.stopLon]);
+        }
+
+        if (leg.endLat) {
+            points.push([leg.endLat, leg.endLon]);
+        }
+
+    });
+
+    if (points.length < 2) {
+        alert("Calcola prima l'itinerario per generare il link.");
+        return;
+    }
+
+    const origin = points[0];
+    const destination = points[points.length - 1];
+    const waypoints = points.slice(1, -1).slice(0, 9);
+
+    let url =
+        "https://www.google.com/maps/dir/?api=1" +
+        "&origin=" + origin[0] + "," + origin[1] +
+        "&destination=" + destination[0] + "," + destination[1];
+
+    if (waypoints.length > 0) {
+
+        url += "&waypoints=" + waypoints.map(function (p) {
+            return p[0] + "," + p[1];
+        }).join("|");
+
+    }
+
+    url += "&travelmode=driving";
+
+    window.open(url, "_blank");
 
 }
 
@@ -600,12 +953,55 @@ function exportCSV() {
 
 
 
-function exportPDF() {
+function captureMapImage() {
+
+    return new Promise(function (resolve, reject) {
+
+        leafletImage(map, function (err, canvas) {
+
+            if (err) {
+                reject(err);
+            } else {
+                resolve(canvas);
+            }
+
+        });
+
+    });
+
+}
+
+
+
+async function exportPDF() {
 
     const doc = new jspdf.jsPDF();
 
     doc.setFontSize(16);
     doc.text("Itinerario camper", 14, 16);
+
+    let nextY = 22;
+
+    try {
+
+        const canvas = await captureMapImage();
+
+        const imgData = canvas.toDataURL("image/png");
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        const maxWidth = pageWidth - 28;
+
+        const imgHeight = maxWidth * (canvas.height / canvas.width);
+
+        doc.addImage(imgData, "PNG", 14, nextY, maxWidth, imgHeight);
+
+        nextY += imgHeight + 8;
+
+    } catch (error) {
+        // Se la mappa non è ancora completamente caricata, il PDF
+        // procede comunque senza immagine, solo con la tabella.
+    }
 
     const rows = legs.map(function (leg) {
         return [
@@ -622,7 +1018,7 @@ function exportPDF() {
     });
 
     doc.autoTable({
-        startY: 22,
+        startY: nextY,
         head: [["Giorno", "Data", "Scopo", "Partenza", "Tappa", "Arrivo", "Partenza ore", "Arrivo ore", "Distanza"]],
         body: rows,
         styles: { fontSize: 8 }
@@ -676,5 +1072,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("calculateItineraryButton").addEventListener("click", calculateItinerary);
     document.getElementById("exportCsvButton").addEventListener("click", exportCSV);
     document.getElementById("exportPdfButton").addEventListener("click", exportPDF);
+    document.getElementById("downloadMapImageButton").addEventListener("click", downloadMapImage);
+    document.getElementById("exportGpxButton").addEventListener("click", exportGPX);
+    document.getElementById("openGoogleMapsButton").addEventListener("click", openInGoogleMaps);
 
 });
