@@ -61,7 +61,7 @@ function createLeg() {
     return {
         id: "leg" + legCounter,
         day: previousLeg ? previousLeg.day : 1,
-        date: "",
+        date: previousLeg ? previousLeg.date : "",
         purpose: "",
         startText: "",
         startNote: "",
@@ -74,7 +74,10 @@ function createLeg() {
         arrivalTime: "",
         arrivalNextDay: false,
         distanceKm: null,
-        durationMin: null
+        durationMin: null,
+        weatherMax: null,
+        weatherMin: null,
+        weatherDesc: null
     };
 
 }
@@ -158,6 +161,7 @@ async function addLeg() {
             }
 
             renderLegs();
+            showCalcDisclaimer();
 
         } catch (error) {
             // Località non trovata o rete assente: nessuna precompilazione,
@@ -165,6 +169,27 @@ async function addLeg() {
         }
 
     }
+
+}
+
+
+
+function showCalcDisclaimer() {
+
+    const banner = document.getElementById("calcDisclaimer");
+
+    if (!banner) {
+        return;
+    }
+
+    banner.style.display = "block";
+
+    banner.classList.remove("disclaimer-pulse");
+
+    // Riavvio l'animazione per far notare il disclaimer anche se era già visibile
+    requestAnimationFrame(function () {
+        banner.classList.add("disclaimer-pulse");
+    });
 
 }
 
@@ -196,7 +221,6 @@ function readLegsFromForm() {
         leg.startNote = document.getElementById(leg.id + "-startNote").value;
 
         leg.stopText = document.getElementById(leg.id + "-stop").value;
-        leg.stopNote = document.getElementById(leg.id + "-stopNote").value;
 
         leg.endText = document.getElementById(leg.id + "-end").value;
         leg.endNote = document.getElementById(leg.id + "-endNote").value;
@@ -205,6 +229,86 @@ function readLegsFromForm() {
         leg.stopDuration = document.getElementById(leg.id + "-stopDuration").value;
 
     });
+
+    saveItineraryToStorage();
+
+}
+
+
+
+const ITINERARY_STORAGE_KEY = "itineraryLegs";
+
+
+
+function saveItineraryToStorage() {
+
+    try {
+        localStorage.setItem(ITINERARY_STORAGE_KEY, JSON.stringify(legs));
+    } catch (error) {
+        // localStorage non disponibile: l'itinerario resta solo in memoria
+    }
+
+}
+
+
+
+function loadItineraryFromStorage() {
+
+    try {
+
+        const raw = localStorage.getItem(ITINERARY_STORAGE_KEY);
+
+        if (!raw) {
+            return false;
+        }
+
+        const saved = JSON.parse(raw);
+
+        if (!Array.isArray(saved) || saved.length === 0) {
+            return false;
+        }
+
+        legs = saved;
+
+        legCounter = legs.length;
+
+        return true;
+
+    } catch (error) {
+
+        return false;
+
+    }
+
+}
+
+
+
+function confirmNewItinerary() {
+
+    document.getElementById("newItineraryModal").style.display = "flex";
+
+}
+
+
+
+function startNewItinerary() {
+
+    legs = [];
+
+    localStorage.removeItem(ITINERARY_STORAGE_KEY);
+
+    clearMap();
+
+    document.getElementById("exportButtons").style.display = "none";
+    document.getElementById("mapDownloadButtons").style.display = "none";
+    document.getElementById("itineraryResults").innerHTML = "";
+    document.getElementById("itinerarySummaryTable").innerHTML = "";
+    document.getElementById("calcDisclaimer").style.display = "none";
+
+    document.getElementById("newItineraryModal").style.display = "none";
+
+    addLeg();
 
 }
 
@@ -233,16 +337,18 @@ function renderLegs() {
                 <button type="button" class="leg-remove" onclick="removeLeg('${leg.id}')">🗑️ Rimuovi</button>
             </div>
 
-            <div class="leg-row leg-row-meta">
-                <div>
-                    <label for="${leg.id}-day">Giorno</label>
-                    <input id="${leg.id}-day" type="number" min="1" value="${leg.day}">
+            <div class="leg-row-meta">
+                <div class="day-date-group">
+                    <div class="day-field">
+                        <label for="${leg.id}-day">Giorno</label>
+                        <input id="${leg.id}-day" type="number" min="1" max="999" value="${leg.day}">
+                    </div>
+                    <div class="date-field">
+                        <label for="${leg.id}-date">Data</label>
+                        <input id="${leg.id}-date" type="date" value="${leg.date}">
+                    </div>
                 </div>
-                <div>
-                    <label for="${leg.id}-date">Data (facoltativa)</label>
-                    <input id="${leg.id}-date" type="date" value="${leg.date}">
-                </div>
-                <div>
+                <div class="purpose-field">
                     <label for="${leg.id}-purpose">Scopo della tratta</label>
                     <input id="${leg.id}-purpose" type="text" placeholder="es. Visita al castello" value="${leg.purpose}">
                 </div>
@@ -269,7 +375,6 @@ function renderLegs() {
                     </div>
                     <div id="${leg.id}-stopSuggestions" class="suggestions"></div>
                 </div>
-                <input id="${leg.id}-stopNote" type="text" class="note-input" placeholder="Nota sulla tappa (facoltativa)" value="${leg.stopNote}">
             </div>
 
             <div class="leg-location-block">
@@ -301,7 +406,7 @@ function renderLegs() {
 
             <div class="leg-row-footer">
                 <button type="button" class="leg-focus-btn" onclick="focusLegOnMap('${leg.id}')">🔍 Vedi sulla mappa</button>
-                ${leg.distanceKm !== null ? `<span class="leg-summary">${leg.distanceKm} km · ${leg.durationMin}</span>` : ""}
+                ${leg.distanceKm !== null ? `<span class="leg-summary">${leg.distanceKm} km · ${leg.durationMin}${leg.weatherDesc ? " · " + leg.weatherDesc + " " + (leg.weatherMin ?? "-") + "°/" + (leg.weatherMax ?? "-") + "°" : ""}</span>` : ""}
             </div>
 
         </div>
@@ -311,6 +416,49 @@ function renderLegs() {
 
     setupLegAutocompletes();
     setupLegMapButtons();
+    setupLegDayListeners();
+
+}
+
+
+
+function setupLegDayListeners() {
+
+    legs.forEach(function (leg, index) {
+
+        const dayInput = document.getElementById(leg.id + "-day");
+
+        if (!dayInput) {
+            return;
+        }
+
+        dayInput.addEventListener("change", function () {
+
+            const newDay = Number(dayInput.value) || 1;
+
+            const previousLeg = legs[index - 1];
+
+            const dateInput = document.getElementById(leg.id + "-date");
+
+            if (previousLeg && previousLeg.date && dateInput && !dateInput.value) {
+
+                const dayDiff = Math.max(newDay - previousLeg.day, 0);
+
+                const baseDate = new Date(previousLeg.date + "T00:00:00");
+
+                baseDate.setDate(baseDate.getDate() + dayDiff);
+
+                dateInput.value = baseDate.toISOString().slice(0, 10);
+
+            }
+
+            leg.day = newDay;
+
+            saveItineraryToStorage();
+
+        });
+
+    });
 
 }
 
@@ -406,6 +554,82 @@ async function onMapPointSelected(field, lat, lon) {
 
 
 
+const WEATHER_CODE_MAP = {
+    0: "☀️ Sereno",
+    1: "🌤️ Poco nuvoloso",
+    2: "⛅ Nubi sparse",
+    3: "☁️ Nuvoloso",
+    45: "🌫️ Nebbia",
+    48: "🌫️ Nebbia gelata",
+    51: "🌦️ Pioviggine leggera",
+    53: "🌦️ Pioviggine",
+    55: "🌧️ Pioviggine intensa",
+    61: "🌧️ Pioggia leggera",
+    63: "🌧️ Pioggia",
+    65: "🌧️ Pioggia intensa",
+    71: "🌨️ Neve leggera",
+    73: "🌨️ Neve",
+    75: "❄️ Neve intensa",
+    80: "🌦️ Rovesci leggeri",
+    81: "🌧️ Rovesci",
+    82: "⛈️ Rovesci violenti",
+    95: "⛈️ Temporale",
+    96: "⛈️ Temporale con grandine",
+    99: "⛈️ Temporale forte"
+};
+
+
+
+function weatherDescriptionFor(code) {
+
+    return WEATHER_CODE_MAP[code] || "☁️ N/D";
+
+}
+
+
+
+async function fetchWeatherForLeg(leg) {
+
+    if (!leg.date || !leg.endLat) {
+        return null;
+    }
+
+    const url =
+        "https://api.open-meteo.com/v1/forecast?latitude=" + leg.endLat +
+        "&longitude=" + leg.endLon +
+        "&daily=temperature_2m_max,temperature_2m_min,weathercode" +
+        "&timezone=auto&start_date=" + leg.date + "&end_date=" + leg.date;
+
+    try {
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const data = await response.json();
+
+        if (!data.daily || !data.daily.time || data.daily.time.length === 0) {
+            return null;
+        }
+
+        return {
+            max: Math.round(data.daily.temperature_2m_max[0]),
+            min: Math.round(data.daily.temperature_2m_min[0]),
+            description: weatherDescriptionFor(data.daily.weathercode[0])
+        };
+
+    } catch (error) {
+
+        return null;
+
+    }
+
+}
+
+
+
 function minutesToTime(totalMinutes) {
 
     const normalized = ((totalMinutes % 1440) + 1440) % 1440;
@@ -442,6 +666,9 @@ async function calculateItinerary() {
 
     let totalDistance = 0;
     let totalDurationMin = 0;
+    let totalCarDurationMin = 0;
+
+    const includeWeather = document.getElementById("includeWeather").checked;
 
     const bounds = [];
 
@@ -529,6 +756,23 @@ async function calculateItinerary() {
 
             totalDistance += route.distance / 1000;
             totalDurationMin += durationMin;
+            totalCarDurationMin += route.duration / 60;
+
+            if (includeWeather) {
+
+                const weather = await fetchWeatherForLeg(leg);
+
+                leg.weatherMax = weather ? weather.max : null;
+                leg.weatherMin = weather ? weather.min : null;
+                leg.weatherDesc = weather ? weather.description : "N/D";
+
+            } else {
+
+                leg.weatherMax = null;
+                leg.weatherMin = null;
+                leg.weatherDesc = null;
+
+            }
 
             // Colore in base al giorno e alla posizione all'interno del giorno
             const dayIndex = indexByDay[leg.day] || 0;
@@ -557,7 +801,8 @@ async function calculateItinerary() {
 
         lastCalculation = {
             totalDistance: totalDistance,
-            totalDurationMin: totalDurationMin
+            totalDurationMin: totalDurationMin,
+            totalCarDurationMin: totalCarDurationMin
         };
 
         renderLegs();
@@ -566,6 +811,8 @@ async function calculateItinerary() {
 
         document.getElementById("exportButtons").style.display = "flex";
         document.getElementById("mapDownloadButtons").style.display = "flex";
+
+        showCalcDisclaimer();
 
     } catch (error) {
 
@@ -592,6 +839,9 @@ function renderSummary() {
     const hours = Math.floor(lastCalculation.totalDurationMin / 60);
     const minutes = Math.round(lastCalculation.totalDurationMin % 60);
 
+    const carHours = Math.floor(lastCalculation.totalCarDurationMin / 60);
+    const carMinutes = Math.round(lastCalculation.totalCarDurationMin % 60);
+
     document.getElementById("itineraryResults").innerHTML = `
         <div class="results-content">
             <div class="results-grid">
@@ -601,8 +851,13 @@ function renderSummary() {
                     <div class="result-value">${lastCalculation.totalDistance.toFixed(0)} km</div>
                 </div>
                 <div class="result-card">
-                    <div class="result-icon">⏱️</div>
-                    <div class="result-label">Guida totale</div>
+                    <div class="result-icon">🚗</div>
+                    <div class="result-label">Tempo con un'auto</div>
+                    <div class="result-value">${carHours}h ${carMinutes}m</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-icon">🚐</div>
+                    <div class="result-label">Tempo in camper</div>
                     <div class="result-value">${hours}h ${minutes}m</div>
                 </div>
                 <div class="result-card">
@@ -636,30 +891,81 @@ function renderSummaryTable() {
         return;
     }
 
+    const includeWeather = legsWithArrival.some(function (leg) {
+        return leg.weatherDesc;
+    });
+
     const title = document.createElement("h3");
     title.className = "summary-title";
-    title.textContent = "📋 Riepilogo tappe (clicca per centrare la mappa)";
+    title.textContent = "📋 Riepilogo tappe (clicca una riga per centrare la mappa)";
     container.appendChild(title);
 
-    const table = document.createElement("div");
-    table.className = "summary-table";
+    const wrapper = document.createElement("div");
+    wrapper.className = "summary-table-wrapper";
+
+    const table = document.createElement("table");
+    table.className = "summary-table-full";
+
+    const headLabels = [
+        "Giorno", "Data", "Scopo", "Partenza", "Tappa", "Arrivo",
+        "Nota arrivo", "Partenza ore", "Arrivo ore", "Distanza", "Durata"
+    ];
+
+    if (includeWeather) {
+        headLabels.push("Meteo", "Min/Max");
+    }
+
+    headLabels.push("");
+
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+
+    headLabels.forEach(function (label) {
+        const th = document.createElement("th");
+        th.textContent = label;
+        headRow.appendChild(th);
+    });
+
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
 
     legsWithArrival.forEach(function (leg) {
 
-        const row = document.createElement("div");
+        const row = document.createElement("tr");
         row.className = "summary-row";
 
-        const dayCell = document.createElement("div");
-        dayCell.className = "summary-cell summary-day";
-        dayCell.textContent = "G" + leg.day;
+        const cells = [
+            "G" + leg.day,
+            leg.date || "-",
+            leg.purpose || "-",
+            leg.startText,
+            leg.stopText || "-",
+            leg.endText,
+            leg.endNote || "-",
+            leg.departureTime || "-",
+            (leg.arrivalTime || "-") + (leg.arrivalNextDay ? " (+1g)" : ""),
+            (leg.distanceKm ? leg.distanceKm + " km" : "-"),
+            leg.durationMin || "-"
+        ];
 
-        const placeCell = document.createElement("div");
-        placeCell.className = "summary-cell summary-place";
-        placeCell.textContent = leg.endText;
+        if (includeWeather) {
+            cells.push(leg.weatherDesc || "-");
+            cells.push(
+                (leg.weatherMin !== null && leg.weatherMin !== undefined ? leg.weatherMin + "°" : "-") +
+                " / " +
+                (leg.weatherMax !== null && leg.weatherMax !== undefined ? leg.weatherMax + "°" : "-")
+            );
+        }
 
-        const timeCell = document.createElement("div");
-        timeCell.className = "summary-cell summary-time";
-        timeCell.textContent = (leg.arrivalTime || "-") + (leg.arrivalNextDay ? " (+1g)" : "");
+        cells.forEach(function (value) {
+            const td = document.createElement("td");
+            td.textContent = value;
+            row.appendChild(td);
+        });
+
+        const actionTd = document.createElement("td");
 
         const copyBtn = document.createElement("button");
         copyBtn.type = "button";
@@ -671,6 +977,9 @@ function renderSummaryTable() {
             event.stopPropagation();
             copyCoordinates(leg.endLat, leg.endLon, copyBtn);
         });
+
+        actionTd.appendChild(copyBtn);
+        row.appendChild(actionTd);
 
         row.addEventListener("click", function () {
 
@@ -685,16 +994,13 @@ function renderSummaryTable() {
 
         });
 
-        row.appendChild(dayCell);
-        row.appendChild(placeCell);
-        row.appendChild(timeCell);
-        row.appendChild(copyBtn);
-
-        table.appendChild(row);
+        tbody.appendChild(row);
 
     });
 
-    container.appendChild(table);
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
+    container.appendChild(wrapper);
 
 }
 
@@ -919,18 +1225,34 @@ function focusLegOnMap(id) {
 
 function exportCSV() {
 
+    const includeWeather = legs.some(function (leg) {
+        return leg.weatherDesc;
+    });
+
     const header = [
         "Giorno", "Data", "Scopo", "Partenza", "Nota partenza",
         "Tappa", "Nota tappa", "Arrivo", "Nota arrivo",
         "Orario partenza", "Orario arrivo", "Distanza (km)", "Durata", "Sosta (min)"
     ];
 
+    if (includeWeather) {
+        header.push("Meteo", "Temp. min (°C)", "Temp. max (°C)");
+    }
+
     const rows = legs.map(function (leg) {
-        return [
+
+        const row = [
             leg.day, leg.date, leg.purpose, leg.startText, leg.startNote,
             leg.stopText, leg.stopNote, leg.endText, leg.endNote,
             leg.departureTime, leg.arrivalTime, leg.distanceKm || "", leg.durationMin || "", leg.stopDuration
         ];
+
+        if (includeWeather) {
+            row.push(leg.weatherDesc || "", leg.weatherMin ?? "", leg.weatherMax ?? "");
+        }
+
+        return row;
+
     });
 
     const csvContent = [header].concat(rows)
@@ -1003,8 +1325,19 @@ async function exportPDF() {
         // procede comunque senza immagine, solo con la tabella.
     }
 
+    const includeWeather = legs.some(function (leg) {
+        return leg.weatherDesc;
+    });
+
+    const head = ["Giorno", "Data", "Scopo", "Partenza", "Tappa", "Arrivo", "Partenza ore", "Arrivo ore", "Distanza", "Durata"];
+
+    if (includeWeather) {
+        head.push("Meteo", "Min/Max");
+    }
+
     const rows = legs.map(function (leg) {
-        return [
+
+        const row = [
             "G" + leg.day,
             leg.date || "",
             leg.purpose || "",
@@ -1013,15 +1346,26 @@ async function exportPDF() {
             leg.endText,
             leg.departureTime || "-",
             leg.arrivalTime ? leg.arrivalTime + (leg.arrivalNextDay ? " (+1g)" : "") : "-",
-            (leg.distanceKm ? leg.distanceKm + " km" : "-")
+            (leg.distanceKm ? leg.distanceKm + " km" : "-"),
+            leg.durationMin || "-"
         ];
+
+        if (includeWeather) {
+            row.push(leg.weatherDesc || "-");
+            row.push(
+                (leg.weatherMin ?? "-") + "° / " + (leg.weatherMax ?? "-") + "°"
+            );
+        }
+
+        return row;
+
     });
 
     doc.autoTable({
         startY: nextY,
-        head: [["Giorno", "Data", "Scopo", "Partenza", "Tappa", "Arrivo", "Partenza ore", "Arrivo ore", "Distanza"]],
+        head: [head],
         body: rows,
-        styles: { fontSize: 8 }
+        styles: { fontSize: 7 }
     });
 
     doc.save("itinerario-camper.pdf");
@@ -1066,7 +1410,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateCamperNote();
 
-    addLeg();
+    const restored = loadItineraryFromStorage();
+
+    if (restored) {
+        renderLegs();
+    } else {
+        addLeg();
+    }
 
     document.getElementById("addLegButton").addEventListener("click", addLeg);
     document.getElementById("calculateItineraryButton").addEventListener("click", calculateItinerary);
@@ -1075,5 +1425,19 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("downloadMapImageButton").addEventListener("click", downloadMapImage);
     document.getElementById("exportGpxButton").addEventListener("click", exportGPX);
     document.getElementById("openGoogleMapsButton").addEventListener("click", openInGoogleMaps);
+
+    document.getElementById("newItineraryButton").addEventListener("click", confirmNewItinerary);
+    document.getElementById("confirmNewItineraryButton").addEventListener("click", startNewItinerary);
+    document.getElementById("cancelNewItineraryButton").addEventListener("click", function () {
+        document.getElementById("newItineraryModal").style.display = "none";
+    });
+
+    document.getElementById("includeWeather").addEventListener("change", function () {
+
+        const disclaimer = document.getElementById("weatherDisclaimer");
+
+        disclaimer.style.display = this.checked ? "block" : "none";
+
+    });
 
 });

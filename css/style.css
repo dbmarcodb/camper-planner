@@ -1054,6 +1054,56 @@ button:disabled {
 
 }
 
+.leg-row-meta{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    align-items:flex-end;
+
+    gap:8px;
+
+    margin-top:10px;
+
+}
+
+.day-date-group{
+
+    display:flex;
+
+    gap:6px;
+
+    flex-shrink:0;
+
+}
+
+.day-field input{
+
+    width:56px;
+
+    text-align:center;
+
+    padding:8px 4px;
+
+}
+
+.date-field input{
+
+    width:132px;
+
+    padding:8px;
+
+}
+
+.purpose-field{
+
+    flex:1;
+
+    min-width:140px;
+
+}
+
 .leg-location-block{
 
     margin-top:12px;
@@ -1251,5 +1301,146 @@ button:disabled {
 #mapDownloadButtons button{
 
     font-size:13px;
+
+}
+
+.itinerary-top-actions{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    margin-bottom:6px;
+
+}
+
+.danger-btn{
+
+    width:auto;
+
+    margin-top:0;
+
+    background:#fdeaea;
+
+    color:#a33;
+
+    border:1px solid #f3c8c8;
+
+    font-size:13px;
+
+    padding:8px 14px;
+
+    min-height:38px;
+
+}
+
+.danger-btn:hover{
+
+    background:#fbdada;
+
+}
+
+.disclaimer-banner{
+
+    margin-top:16px;
+
+    background:#fff4e5;
+
+    color:#8a5a00;
+
+    border:1px solid #f0d9a8;
+
+    padding:12px 14px;
+
+    border-radius:10px;
+
+    font-size:13px;
+
+    line-height:1.5;
+
+}
+
+.disclaimer-pulse{
+
+    animation: disclaimer-flash 0.6s ease;
+
+}
+
+@keyframes disclaimer-flash {
+
+    0% { box-shadow: 0 0 0 0 rgba(224,122,95,0.5); }
+    100% { box-shadow: 0 0 0 10px rgba(224,122,95,0); }
+
+}
+
+.version-tag{
+
+    display:block;
+
+    margin-top:4px;
+
+    opacity:0.85;
+
+}
+
+.summary-table-wrapper{
+
+    margin-top:10px;
+
+    overflow-x:auto;
+
+    border-radius:10px;
+
+    border:1px solid var(--color-border);
+
+}
+
+.summary-table-full{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    font-size:12px;
+
+    white-space:nowrap;
+
+}
+
+.summary-table-full th{
+
+    background:var(--color-primary);
+
+    color:#fff;
+
+    text-align:left;
+
+    padding:8px 10px;
+
+    position:sticky;
+
+    top:0;
+
+}
+
+.summary-table-full td{
+
+    padding:8px 10px;
+
+    border-bottom:1px solid var(--color-border);
+
+}
+
+.summary-table-full tr.summary-row{
+
+    cursor:pointer;
+
+    transition:background .15s;
+
+}
+
+.summary-table-full tr.summary-row:hover{
+
+    background:var(--color-bg);
 
 }

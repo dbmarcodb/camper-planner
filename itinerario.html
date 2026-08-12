@@ -42,6 +42,10 @@
             <a href="index.html" class="back-link">← Torna al calcolo della sosta</a>
         </small>
 
+        <small class="version-tag">
+            Versione 1.8.4
+        </small>
+
     </header>
 
 
@@ -51,6 +55,10 @@
 
         <section class="input-area">
 
+            <div class="itinerary-top-actions">
+                <button id="newItineraryButton" type="button" class="danger-btn">🆕 Nuovo itinerario</button>
+            </div>
+
             <label for="itinerarySpeed">
                 Velocità del camper rispetto a un'auto (%)
             </label>
@@ -58,6 +66,18 @@
             <input id="itinerarySpeed" type="number" min="50" max="110" value="85">
 
             <div id="camperProfileNote" class="camper-note"></div>
+
+            <div class="camper-checkbox-row">
+                <input id="includeWeather" type="checkbox">
+                <label for="includeWeather">🌤️ Includi previsioni meteo (dove disponibili)</label>
+            </div>
+
+            <div id="weatherDisclaimer" class="camper-note" style="display:none;">
+                ℹ️ Le previsioni sono indicative e fornite da Open-Meteo: sono disponibili solo per date entro
+                circa 16 giorni da oggi. Per tappe più lontane nel tempo la colonna resterà vuota (N/D).
+                Non sono garantite per precisione a lungo termine: verifica sempre le previsioni aggiornate
+                vicino alla data del viaggio.
+            </div>
 
             <div id="legsList"></div>
 
@@ -75,6 +95,12 @@
             </div>
 
         </section>
+
+        <div id="calcDisclaimer" class="disclaimer-banner" style="display:none;">
+            ⚠️ Percorsi, orari e distanze sono stime calcolate automaticamente e possono non essere sempre
+            precisi o aggiornati (lavori in corso, chiusure, condizioni reali della strada). Verifica sempre
+            le informazioni prima e durante il viaggio: l'app non si assume responsabilità per il percorso scelto.
+        </div>
 
         <section id="itineraryResults"></section>
 
@@ -99,6 +125,25 @@
     </div>
 
 
+    <div id="newItineraryModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+
+            <h3>⚠️ Nuovo itinerario</h3>
+
+            <p>
+                Stai per cancellare tutte le tratte impostate finora in questo itinerario.
+                L'operazione non si può annullare. Vuoi continuare?
+            </p>
+
+            <div class="camper-profile-actions">
+                <button id="confirmNewItineraryButton" type="button">Sì, cancella tutto</button>
+                <button id="cancelNewItineraryButton" type="button">Annulla</button>
+            </div>
+
+        </div>
+    </div>
+
+
 </div>
 
 
@@ -106,8 +151,8 @@
 
 <script src="https://unpkg.com/leaflet-image@0.4.0/leaflet-image.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 
 <script src="js/map.js"></script>
 <script src="js/routing.js"></script>
