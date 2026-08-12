@@ -86,6 +86,14 @@
 
         <div id="map"></div>
 
+        <div id="mapDownloadButtons" class="camper-profile-actions" style="display:none;">
+            <button id="downloadMapImageButton" type="button">🖼️ Scarica mappa (immagine)</button>
+            <button id="exportGpxButton" type="button">⬇️ Scarica tracciato (GPX)</button>
+            <button id="openGoogleMapsButton" type="button">🧭 Apri in Google Maps</button>
+        </div>
+
+        <div id="itinerarySummaryTable"></div>
+
     </div>
 
     </div>
@@ -95,6 +103,8 @@
 
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script src="https://unpkg.com/leaflet-image@0.4.0/leaflet-image.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
