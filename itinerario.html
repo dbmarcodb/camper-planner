@@ -56,6 +56,9 @@
         <section class="input-area">
 
             <div class="itinerary-top-actions">
+                <button id="downloadBackupButton" type="button" class="secondary-btn">💾 Scarica itinerario</button>
+                <button id="importBackupButton" type="button" class="secondary-btn">📤 Carica itinerario</button>
+                <input type="file" id="importBackupInput" accept="application/json" style="display:none;">
                 <button id="newItineraryButton" type="button" class="danger-btn">🆕 Nuovo itinerario</button>
             </div>
 
@@ -149,7 +152,7 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<script src="https://unpkg.com/leaflet-image@0.4.0/leaflet-image.js"></script>
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>

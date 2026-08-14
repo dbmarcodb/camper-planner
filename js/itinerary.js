@@ -314,6 +314,77 @@ function startNewItinerary() {
 
 
 
+function downloadItineraryBackup() {
+
+    readLegsFromForm();
+
+    if (legs.length === 0) {
+        alert("Non c'è ancora nessuna tratta da salvare.");
+        return;
+    }
+
+    const blob = new Blob(
+        [JSON.stringify(legs, null, 2)],
+        { type: "application/json" }
+    );
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "itinerario-backup.json";
+    link.click();
+
+}
+
+
+
+function importItineraryBackup(file) {
+
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+
+        try {
+
+            const parsed = JSON.parse(event.target.result);
+
+            if (!Array.isArray(parsed) || parsed.length === 0) {
+                alert("Il file non sembra un backup valido di questo itinerario.");
+                return;
+            }
+
+            legs = parsed;
+            legCounter = legs.length;
+
+            saveItineraryToStorage();
+
+            clearMap();
+
+            document.getElementById("itineraryResults").innerHTML = "";
+            document.getElementById("itinerarySummaryTable").innerHTML = "";
+            document.getElementById("exportButtons").style.display = "none";
+            document.getElementById("mapDownloadButtons").style.display = "none";
+            document.getElementById("calcDisclaimer").style.display = "none";
+
+            renderLegs();
+
+        } catch (error) {
+
+            alert("Non è stato possibile leggere il file. Assicurati che sia un backup esportato da questa stessa pagina.");
+
+        }
+
+    };
+
+    reader.readAsText(file);
+
+}
+
+
+
 function renderLegs() {
 
     const container = document.getElementById("legsList");
@@ -1061,17 +1132,19 @@ function flashCopyFeedback(button) {
 
 function downloadMapImage() {
 
-    leafletImage(map, function (err, canvas) {
-
-        if (err) {
-            alert("Non è stato possibile generare l'immagine della mappa. Riprova dopo che la mappa è completamente caricata.");
-            return;
-        }
+    html2canvas(document.getElementById("map"), {
+        useCORS: true,
+        logging: false
+    }).then(function (canvas) {
 
         const link = document.createElement("a");
         link.download = "mappa-itinerario.png";
         link.href = canvas.toDataURL("image/png");
         link.click();
+
+    }).catch(function () {
+
+        alert("Non è stato possibile generare l'immagine della mappa. Riprova dopo che la mappa è completamente caricata.");
 
     });
 
@@ -1277,18 +1350,9 @@ function exportCSV() {
 
 function captureMapImage() {
 
-    return new Promise(function (resolve, reject) {
-
-        leafletImage(map, function (err, canvas) {
-
-            if (err) {
-                reject(err);
-            } else {
-                resolve(canvas);
-            }
-
-        });
-
+    return html2canvas(document.getElementById("map"), {
+        useCORS: true,
+        logging: false
     });
 
 }
@@ -1427,6 +1491,17 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("openGoogleMapsButton").addEventListener("click", openInGoogleMaps);
 
     document.getElementById("newItineraryButton").addEventListener("click", confirmNewItinerary);
+
+    document.getElementById("downloadBackupButton").addEventListener("click", downloadItineraryBackup);
+
+    document.getElementById("importBackupButton").addEventListener("click", function () {
+        document.getElementById("importBackupInput").click();
+    });
+
+    document.getElementById("importBackupInput").addEventListener("change", function () {
+        importItineraryBackup(this.files[0]);
+        this.value = "";
+    });
     document.getElementById("confirmNewItineraryButton").addEventListener("click", startNewItinerary);
     document.getElementById("cancelNewItineraryButton").addEventListener("click", function () {
         document.getElementById("newItineraryModal").style.display = "none";

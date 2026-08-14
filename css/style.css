@@ -1308,6 +1308,10 @@ button:disabled {
 
     display:flex;
 
+    flex-wrap:wrap;
+
+    gap:6px;
+
     justify-content:flex-end;
 
     margin-bottom:6px;
@@ -1399,11 +1403,34 @@ button:disabled {
 
     width:100%;
 
+    min-width:900px;
+
     border-collapse:collapse;
+
+    table-layout:fixed;
 
     font-size:12px;
 
-    white-space:nowrap;
+}
+
+.summary-table-full th,
+.summary-table-full td{
+
+    border:1px solid var(--color-border);
+
+    padding:8px 10px;
+
+    text-align:left;
+
+    white-space:normal;
+
+    overflow-wrap:break-word;
+
+    word-break:break-word;
+
+    vertical-align:top;
+
+    width:90px;
 
 }
 
@@ -1412,22 +1439,6 @@ button:disabled {
     background:var(--color-primary);
 
     color:#fff;
-
-    text-align:left;
-
-    padding:8px 10px;
-
-    position:sticky;
-
-    top:0;
-
-}
-
-.summary-table-full td{
-
-    padding:8px 10px;
-
-    border-bottom:1px solid var(--color-border);
 
 }
 
@@ -1444,3 +1455,16 @@ button:disabled {
     background:var(--color-bg);
 
 }
+
+.summary-table-full th:nth-child(1), .summary-table-full td:nth-child(1){ width:48px; }
+.summary-table-full th:nth-child(2), .summary-table-full td:nth-child(2){ width:95px; }
+.summary-table-full th:nth-child(3), .summary-table-full td:nth-child(3){ width:140px; }
+.summary-table-full th:nth-child(4), .summary-table-full td:nth-child(4){ width:140px; }
+.summary-table-full th:nth-child(5), .summary-table-full td:nth-child(5){ width:120px; }
+.summary-table-full th:nth-child(6), .summary-table-full td:nth-child(6){ width:140px; }
+.summary-table-full th:nth-child(7), .summary-table-full td:nth-child(7){ width:130px; }
+.summary-table-full th:nth-child(8), .summary-table-full td:nth-child(8){ width:80px; }
+.summary-table-full th:nth-child(9), .summary-table-full td:nth-child(9){ width:90px; }
+.summary-table-full th:nth-child(10), .summary-table-full td:nth-child(10){ width:75px; }
+.summary-table-full th:nth-child(11), .summary-table-full td:nth-child(11){ width:75px; }
+.summary-table-full th:last-child, .summary-table-full td:last-child{ width:44px; }
